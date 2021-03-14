@@ -11,6 +11,7 @@ import 'package:floor_generator/processor/view_processor.dart';
 import 'package:floor_generator/value_object/entity.dart';
 import 'package:floor_generator/value_object/query.dart';
 import 'package:floor_generator/value_object/query_method.dart';
+import 'package:floor_generator/value_object/query_method_return_type.dart';
 import 'package:floor_generator/value_object/view.dart';
 import 'package:source_gen/source_gen.dart';
 import 'package:test/test.dart';
@@ -40,13 +41,12 @@ void main() {
       actual,
       equals(
         QueryMethod(
-          methodElement,
           'findAllPersons',
           Query('SELECT * FROM Person', []),
-          await getDartTypeWithPerson('Future<List<Person>>'),
-          await getDartTypeWithPerson('Person'),
           [],
-          entities.first,
+          QueryMethodReturnType(
+              await getDartTypeWithPerson('Future<List<Person>>'))
+            ..queryable = entities.first,
           {},
         ),
       ),
@@ -67,13 +67,11 @@ void main() {
       actual,
       equals(
         QueryMethod(
-          methodElement,
           'findAllNames',
           Query('SELECT * FROM name', []),
-          await getDartTypeWithName('Future<List<Name>>'),
-          await getDartTypeWithName('Name'),
           [],
-          views.first,
+          QueryMethodReturnType(await getDartTypeWithName('Future<List<Name>>'))
+            ..queryable = views.first,
           {},
         ),
       ),
@@ -303,6 +301,38 @@ void main() {
 
       final error =
           QueryMethodProcessorError(methodElement).doesNotReturnFutureNorStream;
+      expect(actual, throwsInvalidGenerationSourceError(error));
+    });
+
+    test('exception when method does not return Future<void> for void',
+        () async {
+      final methodElement = await _createQueryMethodElement('''
+      @Query('SELECT * FROM Person')
+      Future<List<void>> findAllPersons();
+    ''');
+
+      final actual = () =>
+          QueryMethodProcessor(methodElement, [...entities, ...views], {})
+              .process();
+
+      final error =
+          QueryMethodProcessorError(methodElement).doesNotReturnFutureVoid;
+      expect(actual, throwsInvalidGenerationSourceError(error));
+    });
+
+    test('exception when method does not return Future<void> for void',
+        () async {
+      final methodElement = await _createQueryMethodElement('''
+      @Query('SELECT * FROM Person')
+      Stream<void> findAllPersons();
+    ''');
+
+      final actual = () =>
+          QueryMethodProcessor(methodElement, [...entities, ...views], {})
+              .process();
+
+      final error =
+          QueryMethodProcessorError(methodElement).doesNotReturnFutureVoid;
       expect(actual, throwsInvalidGenerationSourceError(error));
     });
 
