@@ -27,39 +27,17 @@ class InsertionMethodWriter implements Writer {
         _method.entity.classElement.displayName.decapitalize();
     final methodSignatureParameterName = _method.parameterElement.displayName;
 
+    final list = _method.changesMultipleItems ? 'List' : '';
+
+    final s = _method.changesMultipleItems ? 's' : '';
+
     if (_method.returnsVoid) {
-      return _generateVoidReturnMethodBody(
-        methodSignatureParameterName,
-        entityClassName,
-      );
+      return 'await _${entityClassName}InsertionAdapter'
+          '.insert$list($methodSignatureParameterName, ${_method.onConflict});';
     } else {
       // if not void then must be int return
-      return _generateIntReturnMethodBody(
-        methodSignatureParameterName,
-        entityClassName,
-      );
-    }
-  }
-
-  String _generateVoidReturnMethodBody(
-    final String methodSignatureParameterName,
-    final String entityClassName,
-  ) {
-    if (_method.changesMultipleItems) {
-      return 'await _${entityClassName}InsertionAdapter.insertList($methodSignatureParameterName, ${_method.onConflict});';
-    } else {
-      return 'await _${entityClassName}InsertionAdapter.insert($methodSignatureParameterName, ${_method.onConflict});';
-    }
-  }
-
-  String _generateIntReturnMethodBody(
-    final String methodSignatureParameterName,
-    final String entityClassName,
-  ) {
-    if (_method.changesMultipleItems) {
-      return 'return _${entityClassName}InsertionAdapter.insertListAndReturnIds($methodSignatureParameterName, ${_method.onConflict});';
-    } else {
-      return 'return _${entityClassName}InsertionAdapter.insertAndReturnId($methodSignatureParameterName, ${_method.onConflict});';
+      return 'return _${entityClassName}InsertionAdapter'
+          '.insert${list}AndReturnId$s($methodSignatureParameterName, ${_method.onConflict});';
     }
   }
 }

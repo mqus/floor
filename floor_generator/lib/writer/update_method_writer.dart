@@ -26,40 +26,15 @@ class UpdateMethodWriter implements Writer {
     final entityClassName =
         _method.entity.classElement.displayName.decapitalize();
     final methodSignatureParameterName = _method.parameterElement.displayName;
+    final list = _method.changesMultipleItems ? 'List' : '';
 
     if (_method.returnsVoid) {
-      return _generateVoidReturnMethodBody(
-        methodSignatureParameterName,
-        entityClassName,
-      );
+      return 'await _${entityClassName}UpdateAdapter'
+          '.update$list($methodSignatureParameterName, ${_method.onConflict});';
     } else {
       // if not void then must be int return
-      return _generateIntReturnMethodBody(
-        methodSignatureParameterName,
-        entityClassName,
-      );
-    }
-  }
-
-  String _generateIntReturnMethodBody(
-    final String methodSignatureParameterName,
-    final String entityClassName,
-  ) {
-    if (_method.changesMultipleItems) {
-      return 'return _${entityClassName}UpdateAdapter.updateListAndReturnChangedRows($methodSignatureParameterName, ${_method.onConflict});';
-    } else {
-      return 'return _${entityClassName}UpdateAdapter.updateAndReturnChangedRows($methodSignatureParameterName, ${_method.onConflict});';
-    }
-  }
-
-  String _generateVoidReturnMethodBody(
-    final String methodSignatureParameterName,
-    final String entityClassName,
-  ) {
-    if (_method.changesMultipleItems) {
-      return 'await _${entityClassName}UpdateAdapter.updateList($methodSignatureParameterName, ${_method.onConflict});';
-    } else {
-      return 'await _${entityClassName}UpdateAdapter.update($methodSignatureParameterName, ${_method.onConflict});';
+      return 'return _${entityClassName}UpdateAdapter'
+          '.update${list}AndReturnChangedRows($methodSignatureParameterName, ${_method.onConflict});';
     }
   }
 }
