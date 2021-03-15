@@ -1,6 +1,5 @@
 // ignore_for_file: import_of_legacy_library_into_null_safe
 import 'package:analyzer/dart/element/element.dart';
-import 'package:analyzer/dart/element/type.dart';
 import 'package:floor_annotation/floor_annotation.dart' as annotations
     show Update, OnConflictStrategy;
 import 'package:floor_generator/misc/change_method_processor_helper.dart';
@@ -26,35 +25,20 @@ class UpdateMethodProcessor implements Processor<UpdateMethod> {
 
   @override
   UpdateMethod process() {
-    final name = _methodElement.name;
-    final returnType = _methodElement.returnType;
+    _helper.assertMethodReturnsFuture('Update');
 
-    _assertMethodReturnsFuture(returnType);
+    final flattenedReturnType = _helper.getFlattenedReturnType();
 
-    final flattenedReturnType = _getFlattenedReturnType(returnType);
-    _assertMethodReturnsNoList(flattenedReturnType);
-
-    final returnsInt = flattenedReturnType.isDartCoreInt;
-    final returnsVoid = flattenedReturnType.isVoid;
-
-    if (!returnsInt && !returnsVoid) {
-      throw InvalidGenerationSourceError(
-        'Update methods have to return a Future of either void or int.',
-        element: _methodElement,
-      );
-    }
+    _helper.assertMethodReturnsIntOrVoid('Update', flattenedReturnType);
 
     final parameterElement = _helper.getParameterElement();
-    final flattenedParameterType =
-        _helper.getFlattenedParameterType(parameterElement);
-    final entity = _helper.getEntity(flattenedParameterType);
+    final entity = _helper.getEntity(parameterElement);
     final onConflict = _getOnConflictStrategy();
 
     return UpdateMethod(
-      _methodElement,
-      name,
-      returnType,
-      flattenedReturnType,
+      _methodElement.name,
+      _methodElement.returnType,
+      flattenedReturnType.isVoid,
       parameterElement,
       entity,
       onConflict,
@@ -74,28 +58,6 @@ class UpdateMethodProcessor implements Processor<UpdateMethod> {
       );
     } else {
       return onConflictStrategy;
-    }
-  }
-
-  DartType _getFlattenedReturnType(final DartType returnType) {
-    return _methodElement.library.typeSystem.flatten(returnType);
-  }
-
-  void _assertMethodReturnsNoList(final DartType flattenedReturnType) {
-    if (flattenedReturnType.isDartCoreList) {
-      throw InvalidGenerationSourceError(
-        'Update methods have to return a Future of either void or int but not a list.',
-        element: _methodElement,
-      );
-    }
-  }
-
-  void _assertMethodReturnsFuture(final DartType returnType) {
-    if (!returnType.isDartAsyncFuture) {
-      throw InvalidGenerationSourceError(
-        'Update methods have to return a Future.',
-        element: _methodElement,
-      );
     }
   }
 }

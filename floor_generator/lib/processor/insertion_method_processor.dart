@@ -26,55 +26,22 @@ class InsertionMethodProcessor implements Processor<InsertionMethod> {
 
   @override
   InsertionMethod process() {
-    final name = _methodElement.name;
-    final returnType = _methodElement.returnType;
+    _assertMethodReturnsFuture();
 
-    _assertMethodReturnsFuture(returnType);
-
-    final returnsList = _getReturnsList(returnType);
-    final flattenedReturnType =
-        _getFlattenedReturnType(returnType, returnsList);
-
-    final returnsVoid = flattenedReturnType.isVoid;
-    final returnsInt = flattenedReturnType.isDartCoreInt;
-    final returnsIntList = returnsList && flattenedReturnType.isDartCoreInt;
-
-    if (!returnsVoid && !returnsIntList && !returnsInt) {
-      throw InvalidGenerationSourceError(
-        'Insertion methods have to return a Future of either void, int or List<int>.',
-        element: _methodElement,
-      );
-    }
+    final flattenedReturnType = _getAndCheckFlatReturnType();
 
     final parameterElement = _helper.getParameterElement();
-    final flattenedParameterType =
-        _helper.getFlattenedParameterType(parameterElement);
-
-    final entity = _helper.getEntity(flattenedParameterType);
+    final entity = _helper.getEntity(parameterElement);
     final onConflict = _getOnConflictStrategy();
 
     return InsertionMethod(
-      _methodElement,
-      name,
-      returnType,
-      flattenedReturnType,
+      _methodElement.name,
+      _methodElement.returnType,
+      flattenedReturnType.isVoid,
       parameterElement,
       entity,
       onConflict,
     );
-  }
-
-  bool _getReturnsList(final DartType returnType) {
-    final type = _methodElement.library.typeSystem.flatten(returnType);
-    return type.isDartCoreList;
-  }
-
-  DartType _getFlattenedReturnType(
-    final DartType returnType,
-    final bool returnsList,
-  ) {
-    final type = _methodElement.library.typeSystem.flatten(returnType);
-    return returnsList ? type.flatten() : type;
   }
 
   String _getOnConflictStrategy() {
@@ -93,12 +60,23 @@ class InsertionMethodProcessor implements Processor<InsertionMethod> {
     }
   }
 
-  void _assertMethodReturnsFuture(final DartType returnType) {
-    if (!returnType.isDartAsyncFuture) {
-      throw InvalidGenerationSourceError(
-        'Insertion methods have to return a Future.',
-        element: _methodElement,
-      );
+  void _assertMethodReturnsFuture() {
+    if (!_methodElement.returnType.isDartAsyncFuture) {
+      throw _helper.processorError.insertMustReturnIntOrVoidFutureList;
     }
+  }
+
+  DartType _getAndCheckFlatReturnType() {
+    DartType flattened = _helper.getFlattenedReturnType();
+    if (flattened.isVoid || flattened.isDartCoreInt) {
+      return flattened;
+    }
+    if (flattened.isDartCoreList) {
+      flattened = flattened.flatten();
+      if (flattened.isDartCoreInt) {
+        return flattened;
+      }
+    }
+    throw _helper.processorError.insertMustReturnIntOrVoidFutureList;
   }
 }

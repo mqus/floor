@@ -27,7 +27,7 @@ class UpdateMethodWriter implements Writer {
         _method.entity.classElement.displayName.decapitalize();
     final methodSignatureParameterName = _method.parameterElement.displayName;
 
-    if (_method.flattenedReturnType.isVoid) {
+    if (_method.returnsVoid) {
       return _generateVoidReturnMethodBody(
         methodSignatureParameterName,
         entityClassName,
