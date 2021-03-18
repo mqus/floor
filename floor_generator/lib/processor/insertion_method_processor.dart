@@ -17,12 +17,11 @@ class InsertionMethodProcessor implements Processor<InsertionMethod> {
   final ChangeMethodProcessorHelper _helper;
 
   InsertionMethodProcessor(
-    final MethodElement methodElement,
+    this._methodElement,
     final List<Entity> entities, [
     final ChangeMethodProcessorHelper? changeMethodProcessorHelper,
-  ])  : _methodElement = methodElement,
-        _helper = changeMethodProcessorHelper ??
-            ChangeMethodProcessorHelper(methodElement, entities);
+  ])  : _helper = changeMethodProcessorHelper ??
+            ChangeMethodProcessorHelper(_methodElement, entities);
 
   @override
   InsertionMethod process() {

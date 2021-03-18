@@ -24,13 +24,8 @@ class QueryMethodProcessor extends Processor<QueryMethod> {
   final Set<TypeConverter> _typeConverters;
 
   QueryMethodProcessor(
-    final MethodElement methodElement,
-    final List<Queryable> queryables,
-    final Set<TypeConverter> typeConverters,
-  )   : _methodElement = methodElement,
-        _queryables = queryables,
-        _typeConverters = typeConverters,
-        _processorError = QueryMethodProcessorError(methodElement);
+      this._methodElement, this._queryables, this._typeConverters)
+      : _processorError = QueryMethodProcessorError(_methodElement);
 
   @override
   QueryMethod process() {
