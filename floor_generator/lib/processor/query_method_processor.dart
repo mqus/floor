@@ -12,6 +12,7 @@ import 'package:floor_generator/processor/error/query_method_processor_error.dar
 import 'package:floor_generator/processor/processor.dart';
 import 'package:floor_generator/processor/query_processor.dart';
 import 'package:floor_generator/value_object/query_method.dart';
+import 'package:floor_generator/value_object/query_method_return_type.dart';
 import 'package:floor_generator/value_object/queryable.dart';
 import 'package:floor_generator/value_object/type_converter.dart';
 
@@ -23,43 +24,16 @@ class QueryMethodProcessor extends Processor<QueryMethod> {
   final Set<TypeConverter> _typeConverters;
 
   QueryMethodProcessor(
-    final MethodElement methodElement,
-    final List<Queryable> queryables,
-    final Set<TypeConverter> typeConverters,
-  )   : _methodElement = methodElement,
-        _queryables = queryables,
-        _typeConverters = typeConverters,
-        _processorError = QueryMethodProcessorError(methodElement);
+      this._methodElement, this._queryables, this._typeConverters)
+      : _processorError = QueryMethodProcessorError(_methodElement);
 
   @override
   QueryMethod process() {
     final name = _methodElement.displayName;
     final parameters = _methodElement.parameters;
-    final rawReturnType = _methodElement.returnType;
+    final returnType = _getAndCheckReturnType();
 
     final query = QueryProcessor(_methodElement, _getQuery()).process();
-
-    _getQuery();
-    final returnsStream = rawReturnType.isStream;
-
-    _assertReturnsFutureOrStream(rawReturnType, returnsStream);
-
-    final returnsList = _getReturnsList(rawReturnType, returnsStream);
-    final flattenedReturnType = _getFlattenedReturnType(
-      rawReturnType,
-      returnsStream,
-      returnsList,
-    );
-
-    _assertReturnsNullableSingle(
-      returnsStream,
-      returnsList,
-      flattenedReturnType,
-    );
-
-    final queryable = _queryables.firstWhereOrNull((queryable) =>
-        queryable.classElement.displayName ==
-        flattenedReturnType.getDisplayString(withNullability: false));
 
     final parameterTypeConverters = parameters
         .expand((parameter) =>
@@ -70,20 +44,17 @@ class QueryMethodProcessor extends Processor<QueryMethod> {
         _methodElement.getTypeConverters(TypeConverterScope.daoMethod) +
         parameterTypeConverters;
 
-    if (queryable != null) {
-      final fieldTypeConverters =
-          queryable.fields.mapNotNull((field) => field.typeConverter);
+    if (returnType.queryable != null) {
+      final fieldTypeConverters = returnType.queryable!.fields
+          .mapNotNull((field) => field.typeConverter);
       allTypeConverters.addAll(fieldTypeConverters);
     }
 
     return QueryMethod(
-      _methodElement,
       name,
       query,
-      rawReturnType,
-      flattenedReturnType,
       parameters,
-      queryable,
+      returnType,
       allTypeConverters,
     );
   }
@@ -99,47 +70,42 @@ class QueryMethodProcessor extends Processor<QueryMethod> {
     return query;
   }
 
-  DartType _getFlattenedReturnType(
-    final DartType rawReturnType,
-    final bool returnsStream,
-    final bool returnsList,
-  ) {
-    final type = returnsStream
-        ? _methodElement.returnType.flatten()
-        : _methodElement.library.typeSystem.flatten(rawReturnType);
-    return returnsList ? type.flatten() : type;
-  }
-
-  bool _getReturnsList(final DartType returnType, final bool returnsStream) {
-    final type = returnsStream
-        ? returnType.flatten()
-        : _methodElement.library.typeSystem.flatten(returnType);
-
-    return type.isDartCoreList;
-  }
-
-  void _assertReturnsFutureOrStream(
-    final DartType rawReturnType,
-    final bool returnsStream,
-  ) {
-    if (!rawReturnType.isDartAsyncFuture && !returnsStream) {
+  void _assertReturnsFutureOrStream(final DartType rawType) {
+    if (!rawType.isDartAsyncFuture && !rawType.isStream) {
       throw _processorError.doesNotReturnFutureNorStream;
     }
   }
 
-  void _assertReturnsNullableSingle(
-    final bool returnsStream,
-    final bool returnsList,
-    final DartType flattenedReturnType,
-  ) {
-    if (!returnsList &&
-        !flattenedReturnType.isVoid &&
-        !flattenedReturnType.isNullable) {
-      if (returnsStream) {
+  void _assertReturnsNullableSingle(QueryMethodReturnType returnType) {
+    if (!returnType.isList &&
+        !returnType.isVoid &&
+        !returnType.flat.isNullable) {
+      if (returnType.isStream) {
         throw _processorError.doesNotReturnNullableStream;
       } else {
         throw _processorError.doesNotReturnNullableFuture;
       }
     }
+  }
+
+  void _assertReturnsFutureOnVoid(QueryMethodReturnType returnType) {
+    if (returnType.isVoid && (returnType.isStream || returnType.isList)) {
+      throw _processorError.doesNotReturnFutureVoid;
+    }
+  }
+
+  QueryMethodReturnType _getAndCheckReturnType() {
+    _assertReturnsFutureOrStream(_methodElement.returnType);
+
+    final type = QueryMethodReturnType(_methodElement.returnType);
+
+    _assertReturnsNullableSingle(type);
+    _assertReturnsFutureOnVoid(type);
+
+    type.queryable = _queryables.firstWhereOrNull((queryable) =>
+        queryable.className ==
+        type.flat.getDisplayString(withNullability: false));
+
+    return type;
   }
 }

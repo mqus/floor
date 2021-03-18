@@ -25,6 +25,15 @@ class QueryMethodProcessorError {
     );
   }
 
+  InvalidGenerationSourceError get doesNotReturnFutureVoid {
+    return InvalidGenerationSourceError(
+      'A query returning `void` has to return exactly `Future<void>`.',
+      todo:
+          'Define the return type as `Future<void>` or return a non-empty value.',
+      element: _methodElement,
+    );
+  }
+
   ProcessorError get doesNotReturnNullableStream {
     return ProcessorError(
       message: 'Queries returning streams of single elements might emit null.',

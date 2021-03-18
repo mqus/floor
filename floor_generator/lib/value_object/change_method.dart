@@ -4,23 +4,21 @@ import 'package:floor_generator/value_object/entity.dart';
 
 /// Base class for change methods (insert, update, delete).
 class ChangeMethod {
-  final MethodElement methodElement;
   final String name;
   final DartType returnType;
-  final DartType flattenedReturnType;
+  final bool returnsVoid;
   final ParameterElement parameterElement;
   final Entity entity;
 
   ChangeMethod(
-    this.methodElement,
     this.name,
     this.returnType,
-    this.flattenedReturnType,
+    this.returnsVoid,
     this.parameterElement,
     this.entity,
   );
 
-  bool get requiresAsyncModifier => flattenedReturnType.isVoid;
+  bool get requiresAsyncModifier => returnsVoid;
 
   bool get changesMultipleItems => parameterElement.type.isDartCoreList;
 
@@ -29,19 +27,17 @@ class ChangeMethod {
       identical(this, other) ||
       other is ChangeMethod &&
           runtimeType == other.runtimeType &&
-          methodElement == other.methodElement &&
           name == other.name &&
           returnType == other.returnType &&
-          flattenedReturnType == other.flattenedReturnType &&
+          returnsVoid == other.returnsVoid &&
           parameterElement == other.parameterElement &&
           entity == other.entity;
 
   @override
   int get hashCode =>
-      methodElement.hashCode ^
       name.hashCode ^
       returnType.hashCode ^
-      flattenedReturnType.hashCode ^
+      returnsVoid.hashCode ^
       parameterElement.hashCode ^
       entity.hashCode;
 }

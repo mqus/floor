@@ -24,42 +24,18 @@ class DeletionMethodWriter implements Writer {
 
   String _generateMethodBody() {
     final entityClassName =
-        _method.entity.classElement.displayName.decapitalize();
+        _method.entity.className.decapitalize();
     final methodSignatureParameterName = _method.parameterElement.name;
 
-    if (_method.flattenedReturnType.isVoid) {
-      return _generateVoidReturnMethodBody(
-        methodSignatureParameterName,
-        entityClassName,
-      );
+    final list = _method.changesMultipleItems ? 'List' : '';
+
+    if (_method.returnsVoid) {
+      return 'await _${entityClassName}DeletionAdapter'
+          '.delete$list($methodSignatureParameterName);';
     } else {
       // if not void then must be int return
-      return _generateIntReturnMethodBody(
-        methodSignatureParameterName,
-        entityClassName,
-      );
-    }
-  }
-
-  String _generateVoidReturnMethodBody(
-    final String methodSignatureParameterName,
-    final String entityClassName,
-  ) {
-    if (_method.changesMultipleItems) {
-      return 'await _${entityClassName}DeletionAdapter.deleteList($methodSignatureParameterName);';
-    } else {
-      return 'await _${entityClassName}DeletionAdapter.delete($methodSignatureParameterName);';
-    }
-  }
-
-  String _generateIntReturnMethodBody(
-    final String methodSignatureParameterName,
-    final String entityClassName,
-  ) {
-    if (_method.changesMultipleItems) {
-      return 'return _${entityClassName}DeletionAdapter.deleteListAndReturnChangedRows($methodSignatureParameterName);';
-    } else {
-      return 'return _${entityClassName}DeletionAdapter.deleteAndReturnChangedRows($methodSignatureParameterName);';
+      return 'return _${entityClassName}DeletionAdapter'
+          '.delete${list}AndReturnChangedRows($methodSignatureParameterName);';
     }
   }
 }

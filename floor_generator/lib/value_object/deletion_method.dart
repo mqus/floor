@@ -5,23 +5,21 @@ import 'package:floor_generator/value_object/entity.dart';
 
 class DeletionMethod extends ChangeMethod {
   DeletionMethod(
-    final MethodElement methodElement,
     final String name,
     final DartType returnType,
-    final DartType flattenedReturnType,
+    final bool returnsVoid,
     final ParameterElement parameterElement,
     final Entity entity,
   ) : super(
-          methodElement,
           name,
           returnType,
-          flattenedReturnType,
+          returnsVoid,
           parameterElement,
           entity,
         );
 
   @override
   String toString() {
-    return 'DeletionMethod{methodElement: $methodElement, name: $name, returnType: $returnType, flattenedReturnType: $flattenedReturnType, parameterElement: $parameterElement, entity: $entity}';
+    return 'DeletionMethod{name: $name, returnType: $returnType, returnsVoid: $returnsVoid, parameterElement: $parameterElement, entity: $entity}';
   }
 }

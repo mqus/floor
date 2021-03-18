@@ -7,18 +7,16 @@ class UpdateMethod extends ChangeMethod {
   final String onConflict;
 
   UpdateMethod(
-    final MethodElement methodElement,
     final String name,
     final DartType returnType,
-    final DartType flattenedReturnType,
+    final bool returnsVoid,
     final ParameterElement parameterElement,
     final Entity entity,
     this.onConflict,
   ) : super(
-          methodElement,
           name,
           returnType,
-          flattenedReturnType,
+          returnsVoid,
           parameterElement,
           entity,
         );
@@ -36,6 +34,6 @@ class UpdateMethod extends ChangeMethod {
 
   @override
   String toString() {
-    return 'UpdateMethod{methodElement: $methodElement, name: $name, returnType: $returnType, flattenedReturnType: $flattenedReturnType, parameterElement: $parameterElement, entity: $entity, onConflict: $onConflict}';
+    return 'UpdateMethod{name: $name, returnType: $returnType, returnsVoid: $returnsVoid, parameterElement: $parameterElement, entity: $entity, onConflict: $onConflict}';
   }
 }

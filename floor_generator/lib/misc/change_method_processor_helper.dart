@@ -2,6 +2,7 @@
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:floor_generator/misc/type_utils.dart';
+import 'package:floor_generator/processor/error/change_method_processor_error.dart';
 import 'package:floor_generator/value_object/entity.dart';
 import 'package:source_gen/source_gen.dart';
 
@@ -10,11 +11,14 @@ class ChangeMethodProcessorHelper {
   final MethodElement _methodElement;
   final List<Entity> _entities;
 
-  const ChangeMethodProcessorHelper(
+  final ChangeMethodProcessorError processorError;
+
+  ChangeMethodProcessorHelper(
     final MethodElement methodElement,
     final List<Entity> entities,
   )   : _methodElement = methodElement,
-        _entities = entities;
+        _entities = entities,
+        processorError = ChangeMethodProcessorError(methodElement);
 
   ParameterElement getParameterElement() {
     final parameters = _methodElement.parameters;
@@ -32,7 +36,7 @@ class ChangeMethodProcessorHelper {
     return parameters.first;
   }
 
-  DartType getFlattenedParameterType(
+  DartType _getFlattenedParameterType(
     final ParameterElement parameterElement,
   ) {
     final changesMultipleItems = parameterElement.type.isDartCoreList;
@@ -42,13 +46,30 @@ class ChangeMethodProcessorHelper {
         : parameterElement.type;
   }
 
-  Entity getEntity(final DartType flattenedParameterType) {
+  Entity getEntity(final ParameterElement parameterElement) {
+    final flattenedParameterType = _getFlattenedParameterType(parameterElement);
     return _entities.firstWhere(
         (entity) =>
-            entity.classElement.displayName ==
+            entity.className ==
             flattenedParameterType.getDisplayString(withNullability: false),
         orElse: () => throw InvalidGenerationSourceError(
             'You are trying to change an object which is not an entity.',
             element: _methodElement));
+  }
+
+  DartType getFlattenedReturnType() {
+    return _methodElement.library.typeSystem.flatten(_methodElement.returnType);
+  }
+
+  void assertMethodReturnsFuture(String methodType) {
+    if (!_methodElement.returnType.isDartAsyncFuture) {
+      throw processorError.changeMustReturnIntOrVoidFuture(methodType);
+    }
+  }
+
+  void assertMethodReturnsIntOrVoid(String methodType, final DartType flat) {
+    if (!flat.isVoid && !flat.isDartCoreInt) {
+      throw processorError.changeMustReturnIntOrVoidFuture(methodType);
+    }
   }
 }

@@ -12,7 +12,6 @@ import 'package:test/test.dart';
 import '../mocks.dart';
 
 void main() {
-  final mockClassElement = MockClassElement();
   final mockFieldElement = MockFieldElement();
   final mockDartType = MockDartType();
 
@@ -35,10 +34,8 @@ void main() {
   final allFields = [field, nullableField];
 
   tearDown(() {
-    clearInteractions(mockClassElement);
     clearInteractions(mockFieldElement);
     clearInteractions(mockDartType);
-    reset(mockClassElement);
     reset(mockFieldElement);
     reset(mockDartType);
   });
@@ -47,7 +44,7 @@ void main() {
     test('Create table statement with single primary key auto increment', () {
       final primaryKey = PrimaryKey([field], true);
       final entity = Entity(
-        mockClassElement,
+        'MockEntityClassName',
         'entityName',
         allFields,
         primaryKey,
@@ -71,7 +68,7 @@ void main() {
     test('Create table statement with single primary key', () {
       final primaryKey = PrimaryKey([field], false);
       final entity = Entity(
-        mockClassElement,
+        'MockEntityClassName',
         'entityName',
         allFields,
         primaryKey,
@@ -96,7 +93,7 @@ void main() {
     test('Create table statement with compound primary key', () {
       final primaryKey = PrimaryKey(allFields, false);
       final entity = Entity(
-        mockClassElement,
+        'MockEntityClassName',
         'entityName',
         allFields,
         primaryKey,
@@ -130,7 +127,7 @@ void main() {
       );
       final primaryKey = PrimaryKey([nullableField], true);
       final entity = Entity(
-        mockClassElement,
+        'MockEntityClassName',
         'entityName',
         [nullableField],
         primaryKey,
@@ -164,7 +161,7 @@ void main() {
       );
       final primaryKey = PrimaryKey([], true);
       final entity = Entity(
-        mockClassElement,
+        'MockEntityClassName',
         'entityName',
         [nullableField],
         primaryKey,
@@ -190,7 +187,7 @@ void main() {
   test('Create table statement with "WITHOUT ROWID"', () {
     final primaryKey = PrimaryKey([field], false);
     final entity = Entity(
-      mockClassElement,
+      'MockEntityClassName',
       'entityName',
       allFields,
       primaryKey,

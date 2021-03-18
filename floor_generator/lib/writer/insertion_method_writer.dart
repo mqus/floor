@@ -24,42 +24,20 @@ class InsertionMethodWriter implements Writer {
 
   String _generateMethodBody() {
     final entityClassName =
-        _method.entity.classElement.displayName.decapitalize();
+        _method.entity.className.decapitalize();
     final methodSignatureParameterName = _method.parameterElement.displayName;
 
-    if (_method.flattenedReturnType.isVoid) {
-      return _generateVoidReturnMethodBody(
-        methodSignatureParameterName,
-        entityClassName,
-      );
+    final list = _method.changesMultipleItems ? 'List' : '';
+
+    final s = _method.changesMultipleItems ? 's' : '';
+
+    if (_method.returnsVoid) {
+      return 'await _${entityClassName}InsertionAdapter'
+          '.insert$list($methodSignatureParameterName, ${_method.onConflict});';
     } else {
       // if not void then must be int return
-      return _generateIntReturnMethodBody(
-        methodSignatureParameterName,
-        entityClassName,
-      );
-    }
-  }
-
-  String _generateVoidReturnMethodBody(
-    final String methodSignatureParameterName,
-    final String entityClassName,
-  ) {
-    if (_method.changesMultipleItems) {
-      return 'await _${entityClassName}InsertionAdapter.insertList($methodSignatureParameterName, ${_method.onConflict});';
-    } else {
-      return 'await _${entityClassName}InsertionAdapter.insert($methodSignatureParameterName, ${_method.onConflict});';
-    }
-  }
-
-  String _generateIntReturnMethodBody(
-    final String methodSignatureParameterName,
-    final String entityClassName,
-  ) {
-    if (_method.changesMultipleItems) {
-      return 'return _${entityClassName}InsertionAdapter.insertListAndReturnIds($methodSignatureParameterName, ${_method.onConflict});';
-    } else {
-      return 'return _${entityClassName}InsertionAdapter.insertAndReturnId($methodSignatureParameterName, ${_method.onConflict});';
+      return 'return _${entityClassName}InsertionAdapter'
+          '.insert${list}AndReturnId$s($methodSignatureParameterName, ${_method.onConflict});';
     }
   }
 }

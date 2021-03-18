@@ -27,7 +27,7 @@ void main() {
     const query = 'SELECT * from otherentity';
     const constructor = "Person(row['id'] as int, row['name'] as String)";
     final expected = View(
-      classElement,
+      classElement.displayName,
       name,
       fields,
       query,
@@ -58,7 +58,7 @@ void main() {
         'WITH subquery as (SELECT * from otherentity) SELECT subquery.*';
     const constructor = "Person(row['id'] as int, row['name'] as String)";
     final expected = View(
-      classElement,
+      classElement.displayName,
       name,
       fields,
       query,
@@ -184,7 +184,7 @@ void main() {
     const query = 'SELECT * from otherentity';
     const constructor = "Person(row['id'] as int, row['name'] as String)";
     final expected = View(
-      classElement,
+      classElement.displayName,
       name,
       fields,
       query,

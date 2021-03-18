@@ -22,14 +22,14 @@ class QueryMethodWriter implements Writer {
   Method write() {
     final builder = MethodBuilder()
       ..annotations.add(overrideAnnotationExpression)
-      ..returns = refer(_queryMethod.rawReturnType.getDisplayString(
+      ..returns = refer(_queryMethod.returnType.raw.getDisplayString(
         withNullability: true,
       ))
       ..name = _queryMethod.name
       ..requiredParameters.addAll(_generateMethodParameters())
       ..body = Code(_generateMethodBody());
 
-    if (!_queryMethod.returnsStream || _queryMethod.returnsVoid) {
+    if (!_queryMethod.returnType.isStream || _queryMethod.returnType.isVoid) {
       builder..modifier = MethodModifier.async;
     }
     return builder.build();
@@ -61,9 +61,9 @@ class QueryMethodWriter implements Writer {
     final arguments = _generateArguments();
     final query = _generateQueryString();
 
-    final queryable = _queryMethod.queryable;
+    final queryable = _queryMethod.returnType.queryable;
     // null queryable implies void-returning query method
-    if (_queryMethod.returnsVoid || queryable == null) {
+    if (_queryMethod.returnType.isVoid || queryable == null) {
       _methodBody.write(_generateNoReturnQuery(query, arguments));
     } else {
       _methodBody.write(_generateQuery(query, arguments, queryable));
@@ -176,7 +176,7 @@ class QueryMethodWriter implements Writer {
     final parameters = StringBuffer(query)..write(', mapper: $mapper');
     if (arguments != null) parameters.write(', arguments: $arguments');
 
-    if (_queryMethod.returnsStream) {
+    if (_queryMethod.returnType.isStream) {
       // for streamed queries, we need to provide the queryable to know which
       // entity to monitor. For views, we monitor all entities.
       parameters
@@ -184,8 +184,8 @@ class QueryMethodWriter implements Writer {
         ..write(', isView: ${queryable is View}');
     }
 
-    final list = _queryMethod.returnsList ? 'List' : '';
-    final stream = _queryMethod.returnsStream ? 'Stream' : '';
+    final list = _queryMethod.returnType.isList ? 'List' : '';
+    final stream = _queryMethod.returnType.isStream ? 'Stream' : '';
 
     return 'return _queryAdapter.query$list$stream($parameters);';
   }

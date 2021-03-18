@@ -13,7 +13,6 @@ import 'package:floor_generator/writer/dao_writer.dart';
 import 'package:source_gen/source_gen.dart';
 import 'package:test/test.dart';
 
-import '../mocks.dart';
 import '../test_utils.dart';
 
 void main() {
@@ -266,7 +265,7 @@ void main() {
     ''');
     // simulate DB is aware of another streamed Entity and no View
     final otherEntity = Entity(
-      MockClassElement(),
+      'MockEntityClass',
       'Dog',
       [],
       PrimaryKey([], false),
