@@ -50,7 +50,7 @@ class ChangeMethodProcessorHelper {
     final flattenedParameterType = _getFlattenedParameterType(parameterElement);
     return _entities.firstWhere(
         (entity) =>
-            entity.classElement.displayName ==
+            entity.className ==
             flattenedParameterType.getDisplayString(withNullability: false),
         orElse: () => throw InvalidGenerationSourceError(
             'You are trying to change an object which is not an entity.',

@@ -20,7 +20,7 @@ class ViewProcessor extends QueryableProcessor<View> {
   View process() {
     final fields = getFields();
     return View(
-      classElement,
+      classElement.displayName,
       _getName(),
       fields,
       _getQuery(),

@@ -24,7 +24,7 @@ class DeletionMethodWriter implements Writer {
 
   String _generateMethodBody() {
     final entityClassName =
-        _method.entity.classElement.displayName.decapitalize();
+        _method.entity.className.decapitalize();
     final methodSignatureParameterName = _method.parameterElement.name;
 
     final list = _method.changesMultipleItems ? 'List' : '';

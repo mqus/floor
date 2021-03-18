@@ -23,8 +23,7 @@ class UpdateMethodWriter implements Writer {
   }
 
   String _generateMethodBody() {
-    final entityClassName =
-        _method.entity.classElement.displayName.decapitalize();
+    final entityClassName = _method.entity.className.decapitalize();
     final methodSignatureParameterName = _method.parameterElement.displayName;
     final list = _method.changesMultipleItems ? 'List' : '';
 

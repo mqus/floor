@@ -39,7 +39,7 @@ class EntityProcessor extends QueryableProcessor<Entity> {
     }
 
     return Entity(
-      classElement,
+      classElement.displayName,
       name,
       fields,
       _getPrimaryKey(fields),

@@ -67,7 +67,7 @@ class DaoWriter extends Writer {
       final entities = insertionMethods.map((method) => method.entity).toSet();
 
       for (final entity in entities) {
-        final entityClassName = entity.classElement.displayName;
+        final entityClassName = entity.className;
         final fieldName = '_${entityClassName.decapitalize()}InsertionAdapter';
         final type = refer('InsertionAdapter<$entityClassName>');
 
@@ -79,7 +79,7 @@ class DaoWriter extends Writer {
         classBuilder.fields.add(field);
 
         final valueMapper =
-            '(${entity.classElement.displayName} item) => ${entity.valueMapping}';
+            '(${entity.className} item) => ${entity.valueMapping}';
 
         final requiresChangeListener =
             dbHasViewStreams || streamEntities.contains(entity);
@@ -95,7 +95,7 @@ class DaoWriter extends Writer {
       final entities = updateMethods.map((method) => method.entity).toSet();
 
       for (final entity in entities) {
-        final entityClassName = entity.classElement.displayName;
+        final entityClassName = entity.className;
         final fieldName = '_${entityClassName.decapitalize()}UpdateAdapter';
         final type = refer('UpdateAdapter<$entityClassName>');
 
@@ -107,7 +107,7 @@ class DaoWriter extends Writer {
         classBuilder.fields.add(field);
 
         final valueMapper =
-            '(${entity.classElement.displayName} item) => ${entity.valueMapping}';
+            '(${entity.className} item) => ${entity.valueMapping}';
 
         final requiresChangeListener =
             dbHasViewStreams || streamEntities.contains(entity);
@@ -123,7 +123,7 @@ class DaoWriter extends Writer {
       final entities = deleteMethods.map((method) => method.entity).toSet();
 
       for (final entity in entities) {
-        final entityClassName = entity.classElement.displayName;
+        final entityClassName = entity.className;
         final fieldName = '_${entityClassName.decapitalize()}DeletionAdapter';
         final type = refer('DeletionAdapter<$entityClassName>');
 
@@ -135,7 +135,7 @@ class DaoWriter extends Writer {
         classBuilder.fields.add(field);
 
         final valueMapper =
-            '(${entity.classElement.displayName} item) => ${entity.valueMapping}';
+            '(${entity.className} item) => ${entity.valueMapping}';
 
         final requiresChangeListener =
             dbHasViewStreams || streamEntities.contains(entity);

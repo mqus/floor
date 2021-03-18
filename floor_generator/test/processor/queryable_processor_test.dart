@@ -30,7 +30,7 @@ void main() {
         .toList();
     const constructor = "Person(row['id'] as int, row['name'] as String)";
     final expected = TestQueryable(
-      classElement,
+      classElement.displayName,
       fields,
       constructor,
     );
@@ -64,7 +64,7 @@ void main() {
       const constructor =
           "Order(row['id'] as int, _typeConverter.decode(row['dateTime'] as int))";
       final expected = TestQueryable(
-        classElement,
+        classElement.displayName,
         fields,
         constructor,
       );
@@ -110,7 +110,7 @@ void main() {
       const constructor =
           "Order(row['id'] as int, _dateTimeConverter.decode(row['dateTime'] as int))";
       final expected = TestQueryable(
-        classElement,
+        classElement.displayName,
         fields,
         constructor,
       );
@@ -164,7 +164,7 @@ void main() {
       const constructor =
           "Order(row['id'] as int, _dateTimeConverter.decode(row['dateTime'] as int))";
       final expected = TestQueryable(
-        classElement,
+        classElement.displayName,
         fields,
         constructor,
       );
@@ -610,27 +610,27 @@ void main() {
 
 class TestQueryable extends Queryable {
   TestQueryable(
-    ClassElement classElement,
+    String className,
     List<Field> fields,
     String constructor,
-  ) : super(classElement, '', fields, constructor);
+  ) : super(className, '', fields, constructor);
 
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       other is TestQueryable &&
           runtimeType == other.runtimeType &&
-          classElement == other.classElement &&
+          className == other.className &&
           const ListEquality<Field>().equals(fields, other.fields) &&
           constructor == other.constructor;
 
   @override
   int get hashCode =>
-      classElement.hashCode ^ fields.hashCode ^ constructor.hashCode;
+      className.hashCode ^ fields.hashCode ^ constructor.hashCode;
 
   @override
   String toString() {
-    return 'TestQueryable{classElement: $classElement, name: $name, fields: $fields, constructor: $constructor}';
+    return 'TestQueryable{classElement: $className, name: $name, fields: $fields, constructor: $constructor}';
   }
 }
 
@@ -644,7 +644,7 @@ class TestProcessor extends QueryableProcessor<TestQueryable> {
   TestQueryable process() {
     final fields = getFields();
     return TestQueryable(
-      classElement,
+      classElement.displayName,
       fields,
       getConstructor(fields),
     );

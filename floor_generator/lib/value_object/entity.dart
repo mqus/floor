@@ -17,7 +17,7 @@ class Entity extends Queryable {
   final Fts? fts;
 
   Entity(
-    ClassElement classElement,
+    String className,
     String name,
     List<Field> fields,
     this.primaryKey,
@@ -27,7 +27,7 @@ class Entity extends Queryable {
     String constructor,
     this.valueMapping,
     this.fts,
-  ) : super(classElement, name, fields, constructor);
+  ) : super(className, name, fields, constructor);
 
   String getCreateTableStatement() {
     final databaseDefinition = fields.map((field) {
@@ -72,7 +72,7 @@ class Entity extends Queryable {
       identical(this, other) ||
       other is Entity &&
           runtimeType == other.runtimeType &&
-          classElement == other.classElement &&
+          className == other.className &&
           name == other.name &&
           fields.equals(other.fields) &&
           primaryKey == other.primaryKey &&
@@ -84,7 +84,7 @@ class Entity extends Queryable {
 
   @override
   int get hashCode =>
-      classElement.hashCode ^
+      className.hashCode ^
       name.hashCode ^
       fields.hashCode ^
       primaryKey.hashCode ^
@@ -97,6 +97,6 @@ class Entity extends Queryable {
 
   @override
   String toString() {
-    return 'Entity{classElement: $classElement, name: $name, fields: $fields, primaryKey: $primaryKey, foreignKeys: $foreignKeys, indices: $indices, constructor: $constructor, withoutRowid: $withoutRowid, valueMapping: $valueMapping, fts: $fts}';
+    return 'Entity{classElement: $className, name: $name, fields: $fields, primaryKey: $primaryKey, foreignKeys: $foreignKeys, indices: $indices, constructor: $constructor, withoutRowid: $withoutRowid, valueMapping: $valueMapping, fts: $fts}';
   }
 }

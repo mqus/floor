@@ -43,7 +43,7 @@ void main() {
     const constructor = "Person(row['id'] as int, row['name'] as String)";
     const valueMapping = "<String, Object?>{'id': item.id, 'name': item.name}";
     final expected = Entity(
-      classElement,
+      classElement.displayName,
       name,
       fields,
       primaryKey,
@@ -81,7 +81,7 @@ void main() {
     const constructor = "Person(row['id'] as int, row['name'] as String)";
     const valueMapping = "<String, Object?>{'id': item.id, 'name': item.name}";
     final expected = Entity(
-      classElement,
+      classElement.displayName,
       name,
       fields,
       primaryKey,
@@ -264,7 +264,7 @@ void main() {
     const indices = <Index>[];
     const constructor = "Person(row['id'] as int, row['name'] as String)";
     final expected = Entity(
-      classElement,
+      classElement.displayName,
       name,
       fields,
       primaryKey,

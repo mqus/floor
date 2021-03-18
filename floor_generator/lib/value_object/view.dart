@@ -7,12 +7,12 @@ class View extends Queryable {
   final String query;
 
   View(
-    ClassElement classElement,
+    String className,
     String name,
     List<Field> fields,
     this.query,
     String constructor,
-  ) : super(classElement, name, fields, constructor);
+  ) : super(className, name, fields, constructor);
 
   String getCreateViewStatement() {
     return 'CREATE VIEW IF NOT EXISTS `$name` AS $query';
@@ -23,7 +23,7 @@ class View extends Queryable {
       identical(this, other) ||
       other is View &&
           runtimeType == other.runtimeType &&
-          classElement == other.classElement &&
+          className == other.className &&
           name == other.name &&
           const ListEquality<Field>().equals(fields, other.fields) &&
           query == other.query &&
@@ -31,7 +31,7 @@ class View extends Queryable {
 
   @override
   int get hashCode =>
-      classElement.hashCode ^
+      className.hashCode ^
       name.hashCode ^
       fields.hashCode ^
       query.hashCode ^
@@ -39,6 +39,6 @@ class View extends Queryable {
 
   @override
   String toString() {
-    return 'View{classElement: $classElement, name: $name, fields: $fields, query: $query, constructor: $constructor}';
+    return 'View{classElement: $className, name: $name, fields: $fields, query: $query, constructor: $constructor}';
   }
 }

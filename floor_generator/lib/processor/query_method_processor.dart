@@ -103,7 +103,7 @@ class QueryMethodProcessor extends Processor<QueryMethod> {
     _assertReturnsFutureOnVoid(type);
 
     type.queryable = _queryables.firstWhereOrNull((queryable) =>
-        queryable.classElement.displayName ==
+        queryable.className ==
         type.flat.getDisplayString(withNullability: false));
 
     return type;
