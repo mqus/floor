@@ -32,8 +32,8 @@ void main() {
 
     expect(actual, equalsDart(r'''
       class _$TestDatabase extends TestDatabase {
-        _$TestDatabase([StreamController<String>? listener]) {
-         changeListener = listener ?? StreamController<String>.broadcast();
+        _$TestDatabase([StreamController<Set<String>>? listener]) {
+         changeListener = listener ?? StreamController<Set<String>>.broadcast();
         }
       
         Future<sqflite.Database> open(String path, List<Migration> migrations,
@@ -86,8 +86,8 @@ void main() {
 
     expect(actual, equalsDart(r'''
       class _$TestDatabase extends TestDatabase {
-        _$TestDatabase([StreamController<String>? listener]) {
-          changeListener = listener ?? StreamController<String>.broadcast();
+        _$TestDatabase([StreamController<Set<String>>? listener]) {
+          changeListener = listener ?? StreamController<Set<String>>.broadcast();
         }
         
         Future<sqflite.Database> open(String path, List<Migration> migrations,
@@ -148,8 +148,8 @@ void main() {
 
     expect(actual, equalsDart(r"""
       class _$TestDatabase extends TestDatabase {
-        _$TestDatabase([StreamController<String>? listener]) {
-         changeListener = listener ?? StreamController<String>.broadcast();
+        _$TestDatabase([StreamController<Set<String>>? listener]) {
+         changeListener = listener ?? StreamController<Set<String>>.broadcast();
         }
       
         Future<sqflite.Database> open(String path, List<Migration> migrations,
