@@ -2,6 +2,7 @@
 import 'package:build_test/build_test.dart';
 import 'package:code_builder/code_builder.dart';
 import 'package:floor_annotation/floor_annotation.dart' as annotations;
+import 'package:floor_generator/misc/foreign_key_map.dart';
 import 'package:floor_generator/misc/type_utils.dart';
 import 'package:floor_generator/processor/dao_processor.dart';
 import 'package:floor_generator/processor/entity_processor.dart';
@@ -37,9 +38,9 @@ void main() {
         }
       ''');
 
-    final actual =
-        DaoWriter(dao, dao.streamEntities.toSet(), dao.streamViews.isNotEmpty)
-            .write();
+    final actual = DaoWriter(dao, dao.streamEntities.toSet(),
+            dao.streamViews.isNotEmpty, emptyForeignKeyMap())
+        .write();
 
     expect(actual, equalsDart(r'''
         class _$PersonDao extends PersonDao {
@@ -116,9 +117,9 @@ void main() {
         }
       ''');
 
-    final actual =
-        DaoWriter(dao, dao.streamEntities.toSet(), dao.streamViews.isNotEmpty)
-            .write();
+    final actual = DaoWriter(dao, dao.streamEntities.toSet(),
+            dao.streamViews.isNotEmpty, emptyForeignKeyMap())
+        .write();
 
     expect(actual, equalsDart(r'''
         class _$PersonDao extends PersonDao {
@@ -136,14 +137,14 @@ void main() {
                     ['id'],
                     (Person item) =>
                         <String, Object?>{'id': item.id, 'name': item.name},
-                    changeListener),
+                    () => changeListener.add(const {'Person'})),
                 _personDeletionAdapter = DeletionAdapter(
                     database,
                     'Person',
                     ['id'],
                     (Person item) =>
                         <String, Object?>{'id': item.id, 'name': item.name},
-                    changeListener);
+                    () => changeListener.add(const {'Person'}));
         
           final sqflite.DatabaseExecutor database;
         
@@ -195,8 +196,9 @@ void main() {
         }
       ''');
     // simulate DB is aware of streamed Person and no View
-    final actual =
-        DaoWriter(dao, {dao.deletionMethods[0].entity}, false).write();
+    final actual = DaoWriter(
+            dao, {dao.deletionMethods[0].entity}, false, emptyForeignKeyMap())
+        .write();
 
     expect(actual, equalsDart(r'''
         class _$PersonDao extends PersonDao {
@@ -213,14 +215,14 @@ void main() {
                     ['id'],
                     (Person item) =>
                         <String, Object?>{'id': item.id, 'name': item.name},
-                    changeListener),
+                    () => changeListener.add(const {'Person'})),
                 _personDeletionAdapter = DeletionAdapter(
                     database,
                     'Person',
                     ['id'],
                     (Person item) =>
                         <String, Object?>{'id': item.id, 'name': item.name},
-                    changeListener);
+                    () => changeListener.add(const {'Person'}));
         
           final sqflite.DatabaseExecutor database;
         
@@ -277,7 +279,8 @@ void main() {
       '',
       null,
     );
-    final actual = DaoWriter(dao, {otherEntity}, false).write();
+    final actual =
+        DaoWriter(dao, {otherEntity}, false, emptyForeignKeyMap()).write();
 
     expect(actual, equalsDart(r'''
       class _$PersonDao extends PersonDao {
@@ -343,7 +346,7 @@ void main() {
         }
       ''');
     // simulate DB is aware of no streamed entity but at least a single View
-    final actual = DaoWriter(dao, {}, true).write();
+    final actual = DaoWriter(dao, {}, true, emptyForeignKeyMap()).write();
 
     expect(actual, equalsDart(r'''
         class _$PersonDao extends PersonDao {
@@ -360,14 +363,14 @@ void main() {
                     ['id'],
                     (Person item) =>
                         <String, Object?>{'id': item.id, 'name': item.name},
-                    changeListener),
+                    () => changeListener.add(const {})),
                 _personDeletionAdapter = DeletionAdapter(
                     database,
                     'Person',
                     ['id'],
                     (Person item) =>
                         <String, Object?>{'id': item.id, 'name': item.name},
-                    changeListener);
+                    () => changeListener.add(const {}));
         
           final sqflite.DatabaseExecutor database;
         
@@ -443,3 +446,5 @@ Future<Dao> _createDao(final String dao) async {
   return DaoProcessor(
       daoClass, 'personDao', 'TestDatabase', entities, views, {}).process();
 }
+
+ForeignKeyMap emptyForeignKeyMap() => ForeignKeyMap.fromEntities({});
