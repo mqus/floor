@@ -26,9 +26,15 @@ void main() {
         } else {
           await (database as sqflite.Database)
               .transaction<void>((transaction) async {
-            final transactionDatabase = _$TestDatabase(changeListener)
+            final innerListener = StreamController<Set<String>>.broadcast();
+            final collector = innerListener.stream.fold<Set<String>>({}, (previous, element) => previous.union(element));
+
+            final transactionDatabase = _$TestDatabase(innerListener)
               ..database = transaction;
             await transactionDatabase.personDao.replacePersons(persons);
+
+            await innerListener.close();
+            changeListener.add(await collector);
           });
         }
       }
@@ -53,9 +59,16 @@ void main() {
         } else {
           return (database as sqflite.Database)
               .transaction<int>((transaction) async {
-            final transactionDatabase = _$TestDatabase(changeListener)
+            final innerListener = StreamController<Set<String>>.broadcast();
+            final collector = innerListener.stream.fold<Set<String>>({}, (previous, element) => previous.union(element));
+
+            final transactionDatabase = _$TestDatabase(innerListener)
               ..database = transaction;
-            return transactionDatabase.personDao.replacePersons(persons);
+            final result = await transactionDatabase.personDao.replacePersons(persons);
+
+            await innerListener.close();
+            changeListener.add(await collector);
+            return result;
           });
         }
       }
@@ -80,9 +93,16 @@ void main() {
         } else {
           return (database as sqflite.Database)
               .transaction<Person>((transaction) async {
-            final transactionDatabase = _$TestDatabase(changeListener)
+            final innerListener = StreamController<Set<String>>.broadcast();
+            final collector = innerListener.stream.fold<Set<String>>({}, (previous, element) => previous.union(element));
+
+            final transactionDatabase = _$TestDatabase(innerListener)
               ..database = transaction;
-            return transactionDatabase.personDao.replacePersons(persons);
+            final result = await transactionDatabase.personDao.replacePersons(persons);
+
+            await innerListener.close();
+            changeListener.add(await collector);
+            return result;
           });
         }
       }
