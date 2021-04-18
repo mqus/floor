@@ -10,6 +10,7 @@ import 'package:floor_generator/misc/extension/type_converter_element_extension.
 import 'package:floor_generator/misc/type_utils.dart';
 import 'package:floor_generator/processor/error/query_method_processor_error.dart';
 import 'package:floor_generator/processor/processor.dart';
+import 'package:floor_generator/processor/query_analyzer/engine.dart';
 import 'package:floor_generator/processor/query_processor.dart';
 import 'package:floor_generator/value_object/query_method.dart';
 import 'package:floor_generator/value_object/queryable.dart';
@@ -21,15 +22,14 @@ class QueryMethodProcessor extends Processor<QueryMethod> {
   final MethodElement _methodElement;
   final List<Queryable> _queryables;
   final Set<TypeConverter> _typeConverters;
+  final AnalyzerEngine _analyzerContext;
 
   QueryMethodProcessor(
-    final MethodElement methodElement,
-    final List<Queryable> queryables,
-    final Set<TypeConverter> typeConverters,
-  )   : _methodElement = methodElement,
-        _queryables = queryables,
-        _typeConverters = typeConverters,
-        _processorError = QueryMethodProcessorError(methodElement);
+    this._methodElement,
+    this._queryables,
+    this._typeConverters,
+    this._analyzerContext,
+  ) : _processorError = QueryMethodProcessorError(_methodElement);
 
   @override
   QueryMethod process() {
@@ -37,9 +37,9 @@ class QueryMethodProcessor extends Processor<QueryMethod> {
     final parameters = _methodElement.parameters;
     final rawReturnType = _methodElement.returnType;
 
-    final query = QueryProcessor(_methodElement, _getQuery()).process();
+    final query =
+        QueryProcessor(_methodElement, _getQuery(), _analyzerContext).process();
 
-    _getQuery();
     final returnsStream = rawReturnType.isStream;
 
     _assertReturnsFutureOrStream(rawReturnType, returnsStream);
