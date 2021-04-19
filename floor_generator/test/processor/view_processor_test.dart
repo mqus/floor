@@ -71,6 +71,28 @@ void main() {
     );
     expect(actual, equals(expected));
   });
+  test('Throws when view annotation is invalid', () async {
+    final classElement = await createClassElement('''
+      @DatabaseView(1)
+      class PersonView {
+        final int id;
+      
+        final String name;
+      
+        PersonView(this.id, this.name);
+      }
+    ''');
+
+    final actual = () async =>
+        ViewProcessor(classElement, {}, await getEngineWithPersonEntity())
+            .process();
+
+    expect(
+        actual,
+        throwsInvalidGenerationSourceError(
+            ViewProcessorError(classElement).missingQuery));
+  });
+
   test('Throws when processing view without SELECT', () async {
     final classElement = await createClassElement('''
       @DatabaseView('DELETE FROM Person')

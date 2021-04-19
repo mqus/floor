@@ -3,6 +3,7 @@ import 'package:build_test/build_test.dart';
 import 'package:floor_annotation/floor_annotation.dart' as annotations;
 import 'package:floor_generator/misc/type_utils.dart';
 import 'package:floor_generator/processor/entity_processor.dart';
+import 'package:floor_generator/processor/error/processor_error.dart';
 import 'package:floor_generator/processor/error/query_method_processor_error.dart';
 import 'package:floor_generator/processor/error/query_processor_error.dart';
 import 'package:floor_generator/processor/query_analyzer/engine.dart';
@@ -345,6 +346,77 @@ void main() {
 
       final error = QueryMethodProcessorError(methodElement).noQueryDefined;
       expect(actual, throwsInvalidGenerationSourceError(error));
+    });
+
+    test('normal parser exception when query string is malformed', () async {
+      final methodElement = await _createQueryMethodElement('''
+        @Query('FROM Person SELECT 1')
+        Future<List<Person>> findAllPersons();
+      ''');
+
+      final actual = () => QueryMethodProcessor(
+              methodElement, [...entities, ...views], {}, analyzer)
+          .process();
+      expect(
+          actual,
+          throwsProcessorErrorWithMessagePrefix(ProcessorError(
+              message: 'The query contained parser errors:',
+              todo: '',
+              element: methodElement)));
+    });
+
+    test('parser exception when query string has more than one query',
+        () async {
+      final methodElement = await _createQueryMethodElement('''
+        @Query('SELECT 1;SELECT 2')
+        Future<List<Person>> findAllPersons();
+      ''');
+
+      final actual = () => QueryMethodProcessor(
+              methodElement, [...entities, ...views], {}, analyzer)
+          .process();
+      expect(
+          actual,
+          throwsProcessorErrorWithMessagePrefix(ProcessorError(
+              message: 'The query contained parser errors:',
+              todo: '',
+              element: methodElement)));
+    });
+
+    test('analyzer exception when query string contains unknown entity',
+        () async {
+      final methodElement = await _createQueryMethodElement('''
+        @Query('SELECT 1 FROM UnknownTable')
+        Future<List<Person>> findAllPersons();
+      ''');
+
+      final actual = () => QueryMethodProcessor(
+              methodElement, [...entities, ...views], {}, analyzer)
+          .process();
+      expect(
+          actual,
+          throwsProcessorErrorWithMessagePrefix(ProcessorError(
+              message: 'The query contained analyzer errors:',
+              todo: '',
+              element: methodElement)));
+    });
+
+    test('analyzer exception when query string references unknown column',
+        () async {
+      final methodElement = await _createQueryMethodElement('''
+        @Query('SELECT unknownColumn FROM Person')
+        Future<List<int>> findAllPersons();
+      ''');
+
+      final actual = () => QueryMethodProcessor(
+              methodElement, [...entities, ...views], {}, analyzer)
+          .process();
+      expect(
+          actual,
+          throwsProcessorErrorWithMessagePrefix(ProcessorError(
+              message: 'The query contained analyzer errors:',
+              todo: '',
+              element: methodElement)));
     });
 
     test(
