@@ -5,6 +5,7 @@ import 'package:floor_annotation/floor_annotation.dart' as annotations;
 import 'package:floor_generator/misc/type_utils.dart';
 import 'package:floor_generator/processor/dao_processor.dart';
 import 'package:floor_generator/processor/entity_processor.dart';
+import 'package:floor_generator/processor/query_analyzer/engine.dart';
 import 'package:floor_generator/processor/view_processor.dart';
 import 'package:floor_generator/value_object/dao.dart';
 import 'package:floor_generator/value_object/entity.dart';
@@ -428,18 +429,22 @@ Future<Dao> _createDao(final String dao) async {
 
   final daoClass = library.classes.firstWhere((classElement) =>
       classElement.hasAnnotation(annotations.dao.runtimeType));
+  final analyzer = AnalyzerEngine();
 
   final entities = library.classes
       .where((classElement) => classElement.hasAnnotation(annotations.Entity))
       .map((classElement) => EntityProcessor(classElement, {}).process())
       .toList();
+  entities.forEach(analyzer.registerEntity);
 
   final views = library.classes
       .where((classElement) =>
           classElement.hasAnnotation(annotations.DatabaseView))
-      .map((classElement) => ViewProcessor(classElement, {}).process())
+      .map(
+          (classElement) => ViewProcessor(classElement, {}, analyzer).process())
       .toList();
 
   return DaoProcessor(
-      daoClass, 'personDao', 'TestDatabase', entities, views, {}).process();
+          daoClass, 'personDao', 'TestDatabase', entities, views, {}, analyzer)
+      .process();
 }

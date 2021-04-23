@@ -1,11 +1,28 @@
 import 'package:analyzer/dart/element/element.dart';
 import 'package:floor_generator/processor/error/processor_error.dart';
+import 'package:sqlparser/sqlparser.dart';
 
 class QueryProcessorError {
   final MethodElement _methodElement;
 
   QueryProcessorError(final MethodElement methodElement)
       : _methodElement = methodElement;
+
+  ProcessorError fromParsingError(ParsingError error) {
+    return ProcessorError(
+      message: 'The query contained parser errors: ${error.toString()}',
+      todo: '',
+      element: _methodElement,
+    );
+  }
+
+  ProcessorError fromAnalysisError(AnalysisError error) {
+    return ProcessorError(
+      message: 'The query contained analyzer errors: ${error.toString()}',
+      todo: '',
+      element: _methodElement,
+    );
+  }
 
   ProcessorError unusedQueryMethodParameter(
     final ParameterElement parameterElement,

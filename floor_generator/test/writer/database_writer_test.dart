@@ -209,6 +209,7 @@ void main() {
         @primaryKey
         final int id;
       
+        @ColumnInfo(name: 'custom_name')
         final String name;
       
         Person(this.id, this.name);
@@ -242,7 +243,7 @@ void main() {
             },
             onCreate: (database, version) async {
               await database.execute(
-                  'CREATE TABLE IF NOT EXISTS `Person` (`id` INTEGER NOT NULL, `name` TEXT NOT NULL, PRIMARY KEY (`id`))');
+                  'CREATE TABLE IF NOT EXISTS `Person` (`id` INTEGER NOT NULL, `custom_name` TEXT NOT NULL, PRIMARY KEY (`id`))');
                   
               await database.execute(
                   '''CREATE VIEW IF NOT EXISTS `names` AS SELECT custom_name as name FROM person''');

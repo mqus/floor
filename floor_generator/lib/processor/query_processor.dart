@@ -2,6 +2,7 @@ import 'package:floor_generator/misc/extension/dart_type_extension.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:floor_generator/processor/error/query_processor_error.dart';
 import 'package:floor_generator/processor/processor.dart';
+import 'package:floor_generator/processor/query_analyzer/engine.dart';
 import 'package:floor_generator/value_object/query.dart';
 
 class QueryProcessor extends Processor<Query> {
@@ -11,13 +12,18 @@ class QueryProcessor extends Processor<Query> {
 
   final List<ParameterElement> _parameters;
 
-  QueryProcessor(MethodElement methodElement, this._query)
+  final AnalyzerEngine _analyzerContext;
+
+  QueryProcessor(
+      MethodElement methodElement, this._query, this._analyzerContext)
       : _parameters = methodElement.parameters,
         _processorError = QueryProcessorError(methodElement);
 
   @override
   Query process() {
     _assertNoNullableParameters();
+
+    _validate();
 
     final indices = <String, int>{};
     final fixedParameters = <String>{};
@@ -90,6 +96,18 @@ class QueryProcessor extends Processor<Query> {
       if (!queryVariables.contains(param.displayName)) {
         throw _processorError.unusedQueryMethodParameter(param);
       }
+    }
+  }
+
+  void _validate() {
+    final parsed = _analyzerContext.inner.parse(_query);
+    if (parsed.errors.isNotEmpty) {
+      throw _processorError.fromParsingError(parsed.errors.first);
+    }
+
+    final analyzed = _analyzerContext.inner.analyzeParsed(parsed);
+    if (analyzed.errors.isNotEmpty) {
+      throw _processorError.fromAnalysisError(analyzed.errors.first);
     }
   }
 }

@@ -9,6 +9,7 @@ import 'package:floor_generator/processor/dao_processor.dart';
 import 'package:floor_generator/processor/entity_processor.dart';
 import 'package:floor_generator/processor/error/database_processor_error.dart';
 import 'package:floor_generator/processor/processor.dart';
+import 'package:floor_generator/processor/query_analyzer/engine.dart';
 import 'package:floor_generator/processor/view_processor.dart';
 import 'package:floor_generator/value_object/dao_getter.dart';
 import 'package:floor_generator/value_object/database.dart';
@@ -21,6 +22,7 @@ class DatabaseProcessor extends Processor<Database> {
   final DatabaseProcessorError _processorError;
 
   final ClassElement _classElement;
+  final _analyzerContext = AnalyzerEngine();
 
   DatabaseProcessor(final ClassElement classElement)
       : _classElement = classElement,
@@ -86,6 +88,7 @@ class DatabaseProcessor extends Processor<Database> {
         entities,
         views,
         typeConverters,
+        _analyzerContext,
       ).process();
 
       return DaoGetter(field, name, dao);
@@ -122,6 +125,7 @@ class DatabaseProcessor extends Processor<Database> {
     if (entities == null || entities.isEmpty) {
       throw _processorError.noEntitiesDefined;
     }
+    entities.forEach(_analyzerContext.registerEntity);
 
     return entities;
   }
@@ -137,10 +141,9 @@ class DatabaseProcessor extends Processor<Database> {
             ?.mapNotNull((object) => object.toTypeValue()?.element)
             .whereType<ClassElement>()
             .where(_isView)
-            .map((classElement) => ViewProcessor(
-                  classElement,
-                  typeConverters,
-                ).process())
+            .map((classElement) =>
+                ViewProcessor(classElement, typeConverters, _analyzerContext)
+                    .process())
             .toList() ??
         [];
   }

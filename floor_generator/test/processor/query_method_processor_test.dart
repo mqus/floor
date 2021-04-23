@@ -3,8 +3,10 @@ import 'package:build_test/build_test.dart';
 import 'package:floor_annotation/floor_annotation.dart' as annotations;
 import 'package:floor_generator/misc/type_utils.dart';
 import 'package:floor_generator/processor/entity_processor.dart';
+import 'package:floor_generator/processor/error/processor_error.dart';
 import 'package:floor_generator/processor/error/query_method_processor_error.dart';
 import 'package:floor_generator/processor/error/query_processor_error.dart';
+import 'package:floor_generator/processor/query_analyzer/engine.dart';
 import 'package:floor_generator/processor/query_method_processor.dart';
 import 'package:floor_generator/processor/view_processor.dart';
 import 'package:floor_generator/value_object/entity.dart';
@@ -19,10 +21,12 @@ import '../test_utils.dart';
 void main() {
   late List<Entity> entities;
   late List<View> views;
+  final analyzer = AnalyzerEngine();
 
   setUpAll(() async {
     entities = await _getEntities();
-    views = await _getViews();
+    entities.forEach(analyzer.registerEntity);
+    views = await _getViews(analyzer);
   });
 
   test('create query method', () async {
@@ -31,9 +35,9 @@ void main() {
       Future<List<Person>> findAllPersons();      
     ''');
 
-    final actual =
-        QueryMethodProcessor(methodElement, [...entities, ...views], {})
-            .process();
+    final actual = QueryMethodProcessor(
+            methodElement, [...entities, ...views], {}, analyzer)
+        .process();
 
     expect(
       actual,
@@ -58,9 +62,9 @@ void main() {
       Future<List<Name>> findAllNames();      
     ''');
 
-    final actual =
-        QueryMethodProcessor(methodElement, [...entities, ...views], {})
-            .process();
+    final actual = QueryMethodProcessor(
+            methodElement, [...entities, ...views], {}, analyzer)
+        .process();
 
     expect(
       actual,
@@ -87,7 +91,7 @@ void main() {
     ''');
 
       final actual =
-          QueryMethodProcessor(methodElement, [], {}).process().query;
+          QueryMethodProcessor(methodElement, [], {}, analyzer).process().query;
 
       expect(actual.sql, equals('SELECT * FROM Person WHERE id = ?1'));
       expect(actual.listParameters, equals(<ListParameter>[]));
@@ -99,8 +103,10 @@ void main() {
       Future<Person?> findPerson(int id);
     ''');
 
-      final actual =
-          QueryMethodProcessor(methodElement, [], {}).process().query.sql;
+      final actual = QueryMethodProcessor(methodElement, [], {}, analyzer)
+          .process()
+          .query
+          .sql;
 
       expect(actual, equals('SELECT * FROM Person WHERE id = ?1 AND id = ?1'));
     });
@@ -111,8 +117,10 @@ void main() {
       Future<Person?> findPerson(int id, String name);
     ''');
 
-      final actual =
-          QueryMethodProcessor(methodElement, [], {}).process().query.sql;
+      final actual = QueryMethodProcessor(methodElement, [], {}, analyzer)
+          .process()
+          .query
+          .sql;
 
       expect(
           actual,
@@ -124,168 +132,175 @@ void main() {
       final methodElement = await _createQueryMethodElement("""
         @Query('''
           SELECT * FROM person
-          WHERE id = :id AND custom_name = :name
+          WHERE id = :id AND name = :name
         ''')
         Future<Person?> findPersonByIdAndName(int id, String name);
       """);
 
-      final actual =
-          QueryMethodProcessor(methodElement, [], {}).process().query.sql;
+      final actual = QueryMethodProcessor(methodElement, [], {}, analyzer)
+          .process()
+          .query
+          .sql;
 
       expect(
         actual,
-        equals(
-            'SELECT * FROM person           WHERE id = ?1 AND custom_name = ?2'),
+        equals('SELECT * FROM person           WHERE id = ?1 AND name = ?2'),
       );
     });
 
     test('parse concatenated string query', () async {
       final methodElement = await _createQueryMethodElement('''
         @Query('SELECT * FROM person '
-            'WHERE id = :id AND custom_name = :name')
+            'WHERE id = :id AND name = :name')
         Future<Person?> findPersonByIdAndName(int id, String name);    
       ''');
 
-      final actual =
-          QueryMethodProcessor(methodElement, [], {}).process().query.sql;
+      final actual = QueryMethodProcessor(methodElement, [], {}, analyzer)
+          .process()
+          .query
+          .sql;
 
       expect(
         actual,
-        equals('SELECT * FROM person WHERE id = ?1 AND custom_name = ?2'),
+        equals('SELECT * FROM person WHERE id = ?1 AND name = ?2'),
       );
     });
 
     test('Parse IN clause', () async {
       final methodElement = await _createQueryMethodElement('''
-      @Query('update sports set rated = 1 where id in (:ids)')
-      Future<void> setRated(List<int> ids);
+      @Query('update person set name = 1 where id in (:ids)')
+      Future<void> setName(List<int> ids);
     ''');
 
       final actual =
-          QueryMethodProcessor(methodElement, [], {}).process().query;
+          QueryMethodProcessor(methodElement, [], {}, analyzer).process().query;
 
       expect(
         actual.sql,
-        equals(r'update sports set rated = 1 where id in (:varlist)'),
-      );
-      expect(actual.listParameters, equals([ListParameter(41, 'ids')]));
-    });
-
-    test('parses IN clause without space after IN', () async {
-      final methodElement = await _createQueryMethodElement('''
-      @Query('update sports set rated = 1 where id in(:ids)')
-      Future<void> setRated(List<int> ids);
-    ''');
-
-      final actual =
-          QueryMethodProcessor(methodElement, [], {}).process().query;
-
-      expect(
-        actual.sql,
-        equals(r'update sports set rated = 1 where id in(:varlist)'),
+        equals(r'update person set name = 1 where id in (:varlist)'),
       );
       expect(actual.listParameters, equals([ListParameter(40, 'ids')]));
     });
 
-    test('parses IN clause with multiple spaces after IN', () async {
+    test('parses IN clause without space after IN', () async {
       final methodElement = await _createQueryMethodElement('''
-      @Query('update sports set rated = 1 where id in      (:ids)')
-      Future<void> setRated(List<int> ids);
+      @Query('update person set name = 1 where id in(:ids)')
+      Future<void> setName(List<int> ids);
     ''');
 
       final actual =
-          QueryMethodProcessor(methodElement, [], {}).process().query;
+          QueryMethodProcessor(methodElement, [], {}, analyzer).process().query;
 
       expect(
         actual.sql,
-        equals(r'update sports set rated = 1 where id in      (:varlist)'),
+        equals(r'update person set name = 1 where id in(:varlist)'),
       );
-      expect(actual.listParameters, equals([ListParameter(46, 'ids')]));
+      expect(actual.listParameters, equals([ListParameter(39, 'ids')]));
+    });
+
+    test('parses IN clause with multiple spaces after IN', () async {
+      final methodElement = await _createQueryMethodElement('''
+      @Query('update person set name = 1 where id in      (:ids)')
+      Future<void> setName(List<int> ids);
+    ''');
+
+      final actual =
+          QueryMethodProcessor(methodElement, [], {}, analyzer).process().query;
+
+      expect(
+        actual.sql,
+        equals(r'update person set name = 1 where id in      (:varlist)'),
+      );
+      expect(actual.listParameters, equals([ListParameter(45, 'ids')]));
     });
 
     test('Parse query with multiple IN clauses', () async {
       final methodElement = await _createQueryMethodElement('''
-      @Query('update sports set rated = 1 where id in (:ids) and where foo in (:bar)')
-      Future<void> setRated(List<int> ids, List<int> bar);
+      @Query('update person set name = 1 where id in (:ids) and name in (:bar)')
+      Future<void> setName(List<int> ids, List<int> bar);
     ''');
 
       final actual =
-          QueryMethodProcessor(methodElement, [], {}).process().query;
+          QueryMethodProcessor(methodElement, [], {}, analyzer).process().query;
 
       expect(
         actual.sql,
         equals(
-          r'update sports set rated = 1 where id in (:varlist) '
-          r'and where foo in (:varlist)',
+          r'update person set name = 1 where id in (:varlist) '
+          r'and name in (:varlist)',
         ),
       );
       expect(actual.listParameters,
-          equals([ListParameter(41, 'ids'), ListParameter(69, 'bar')]));
+          equals([ListParameter(40, 'ids'), ListParameter(63, 'bar')]));
     });
 
     test('Parse query with IN clause and other parameter', () async {
       final methodElement = await _createQueryMethodElement('''
-      @Query('update sports set rated = 1 where id in (:ids) AND foo = :bar')
-      Future<void> setRated(List<int> ids, int bar);
+      @Query('update person set name = 1 where id in (:ids) AND name = :bar')
+      Future<void> setName(List<int> ids, int bar);
     ''');
 
       final actual =
-          QueryMethodProcessor(methodElement, [], {}).process().query;
+          QueryMethodProcessor(methodElement, [], {}, analyzer).process().query;
 
       expect(
         actual.sql,
         equals(
-          r'update sports set rated = 1 where id in (:varlist) '
-          r'AND foo = ?1',
+          r'update person set name = 1 where id in (:varlist) '
+          r'AND name = ?1',
         ),
       );
-      expect(actual.listParameters, equals([ListParameter(41, 'ids')]));
+      expect(actual.listParameters, equals([ListParameter(40, 'ids')]));
     });
 
     test('Parse query with mixed IN clauses and other parameters', () async {
       final methodElement = await _createQueryMethodElement('''
-      @Query('update sports set rated = 1 where id in (:ids) AND foo = :bar AND name in (:names) and :bar = :foo')
-      Future<void> setRated(String foo, List<String> names, List<int> ids, int bar);
+      @Query('update person set name = 1 where id in (:ids) AND name = :bar AND name in (:names) and :bar = :foo')
+      Future<void> setName(String foo, List<String> names, List<int> ids, int bar);
     ''');
 
       final actual =
-          QueryMethodProcessor(methodElement, [], {}).process().query;
+          QueryMethodProcessor(methodElement, [], {}, analyzer).process().query;
 
       expect(
         actual.sql,
         equals(
-          r'update sports set rated = 1 where id in (:varlist) AND foo = ?2 '
+          r'update person set name = 1 where id in (:varlist) AND name = ?2 '
           r'AND name in (:varlist) and ?2 = ?1',
         ),
       );
       expect(actual.listParameters,
-          equals([ListParameter(41, 'ids'), ListParameter(77, 'names')]));
+          equals([ListParameter(40, 'ids'), ListParameter(77, 'names')]));
     });
 
     test('Parse query with LIKE operator', () async {
       final methodElement = await _createQueryMethodElement('''
-      @Query('SELECT * FROM Persons WHERE name LIKE :name')
+      @Query('SELECT * FROM Person WHERE name LIKE :name')
       Future<List<Person>> findPersonsWithNamesLike(String name);
     ''');
 
-      final actual =
-          QueryMethodProcessor(methodElement, [], {}).process().query.sql;
+      final actual = QueryMethodProcessor(methodElement, [], {}, analyzer)
+          .process()
+          .query
+          .sql;
 
-      expect(actual, equals('SELECT * FROM Persons WHERE name LIKE ?1'));
+      expect(actual, equals('SELECT * FROM Person WHERE name LIKE ?1'));
     });
 
     test('Parse query with commas', () async {
       final methodElement = await _createQueryMethodElement('''
-      @Query('SELECT * FROM :table, :otherTable')
+      @Query('SELECT :table, :otherTable')
       Future<List<Person>> findPersonsWithNamesLike(String table, String otherTable);
     ''');
 
-      final actual =
-          QueryMethodProcessor(methodElement, [], {}).process().query.sql;
+      final actual = QueryMethodProcessor(methodElement, [], {}, analyzer)
+          .process()
+          .query
+          .sql;
       // note: this will throw an error at runtime, because
       // sqlite variables can not be used in place of table
       // names. But the Processor is not aware of this.
-      expect(actual, equals('SELECT * FROM ?1, ?2'));
+      expect(actual, equals('SELECT ?1, ?2'));
     });
   });
 
@@ -296,9 +311,9 @@ void main() {
       List<Person?> findAllPersons();
     ''');
 
-      final actual = () =>
-          QueryMethodProcessor(methodElement, [...entities, ...views], {})
-              .process();
+      final actual = () => QueryMethodProcessor(
+              methodElement, [...entities, ...views], {}, analyzer)
+          .process();
 
       final error =
           QueryMethodProcessorError(methodElement).doesNotReturnFutureNorStream;
@@ -311,9 +326,9 @@ void main() {
       Future<List<Person>> findAllPersons();
     ''');
 
-      final actual = () =>
-          QueryMethodProcessor(methodElement, [...entities, ...views], {})
-              .process();
+      final actual = () => QueryMethodProcessor(
+              methodElement, [...entities, ...views], {}, analyzer)
+          .process();
 
       final error = QueryMethodProcessorError(methodElement).noQueryDefined;
       expect(actual, throwsInvalidGenerationSourceError(error));
@@ -325,12 +340,83 @@ void main() {
       Future<List<Person>> findAllPersons();
     ''');
 
-      final actual = () =>
-          QueryMethodProcessor(methodElement, [...entities, ...views], {})
-              .process();
+      final actual = () => QueryMethodProcessor(
+              methodElement, [...entities, ...views], {}, analyzer)
+          .process();
 
       final error = QueryMethodProcessorError(methodElement).noQueryDefined;
       expect(actual, throwsInvalidGenerationSourceError(error));
+    });
+
+    test('normal parser exception when query string is malformed', () async {
+      final methodElement = await _createQueryMethodElement('''
+        @Query('FROM Person SELECT 1')
+        Future<List<Person>> findAllPersons();
+      ''');
+
+      final actual = () => QueryMethodProcessor(
+              methodElement, [...entities, ...views], {}, analyzer)
+          .process();
+      expect(
+          actual,
+          throwsProcessorErrorWithMessagePrefix(ProcessorError(
+              message: 'The query contained parser errors:',
+              todo: '',
+              element: methodElement)));
+    });
+
+    test('parser exception when query string has more than one query',
+        () async {
+      final methodElement = await _createQueryMethodElement('''
+        @Query('SELECT 1;SELECT 2')
+        Future<List<Person>> findAllPersons();
+      ''');
+
+      final actual = () => QueryMethodProcessor(
+              methodElement, [...entities, ...views], {}, analyzer)
+          .process();
+      expect(
+          actual,
+          throwsProcessorErrorWithMessagePrefix(ProcessorError(
+              message: 'The query contained parser errors:',
+              todo: '',
+              element: methodElement)));
+    });
+
+    test('analyzer exception when query string contains unknown entity',
+        () async {
+      final methodElement = await _createQueryMethodElement('''
+        @Query('SELECT 1 FROM UnknownTable')
+        Future<List<Person>> findAllPersons();
+      ''');
+
+      final actual = () => QueryMethodProcessor(
+              methodElement, [...entities, ...views], {}, analyzer)
+          .process();
+      expect(
+          actual,
+          throwsProcessorErrorWithMessagePrefix(ProcessorError(
+              message: 'The query contained analyzer errors:',
+              todo: '',
+              element: methodElement)));
+    });
+
+    test('analyzer exception when query string references unknown column',
+        () async {
+      final methodElement = await _createQueryMethodElement('''
+        @Query('SELECT unknownColumn FROM Person')
+        Future<List<int>> findAllPersons();
+      ''');
+
+      final actual = () => QueryMethodProcessor(
+              methodElement, [...entities, ...views], {}, analyzer)
+          .process();
+      expect(
+          actual,
+          throwsProcessorErrorWithMessagePrefix(ProcessorError(
+              message: 'The query contained analyzer errors:',
+              todo: '',
+              element: methodElement)));
     });
 
     test(
@@ -341,9 +427,9 @@ void main() {
       Future<Person?> findPersonByIdAndName(List<int> id);
     ''');
 
-      final actual = () =>
-          QueryMethodProcessor(methodElement, [...entities, ...views], {})
-              .process();
+      final actual = () => QueryMethodProcessor(
+              methodElement, [...entities, ...views], {}, analyzer)
+          .process();
 
       final error = QueryProcessorError(methodElement)
           .queryMethodParameterIsListButVariableIsNot(':id');
@@ -358,9 +444,9 @@ void main() {
       Future<Person?> findPersonByIdAndName(int id);
     ''');
 
-      final actual = () =>
-          QueryMethodProcessor(methodElement, [...entities, ...views], {})
-              .process();
+      final actual = () => QueryMethodProcessor(
+              methodElement, [...entities, ...views], {}, analyzer)
+          .process();
 
       final error = QueryProcessorError(methodElement)
           .queryMethodParameterIsNormalButVariableIsList(':id');
@@ -374,9 +460,9 @@ void main() {
       Future<Person?> findPersonByIdAndName(int id);
     ''');
 
-      final actual = () =>
-          QueryMethodProcessor(methodElement, [...entities, ...views], {})
-              .process();
+      final actual = () => QueryMethodProcessor(
+              methodElement, [...entities, ...views], {}, analyzer)
+          .process();
 
       final error =
           QueryProcessorError(methodElement).unknownQueryVariable(':name');
@@ -390,9 +476,9 @@ void main() {
       Future<Person?> findPersonByIdAndName(int? id);
     ''');
 
-      final actual = () =>
-          QueryMethodProcessor(methodElement, [...entities, ...views], {})
-              .process();
+      final actual = () => QueryMethodProcessor(
+              methodElement, [...entities, ...views], {}, analyzer)
+          .process();
 
       final parameterElement = methodElement.parameters.first;
       final error = QueryProcessorError(methodElement)
@@ -407,9 +493,9 @@ void main() {
       Future<Person?> findPersonByIdAndName(int id, String name);
     ''');
 
-      final actual = () =>
-          QueryMethodProcessor(methodElement, [...entities, ...views], {})
-              .process();
+      final actual = () => QueryMethodProcessor(
+              methodElement, [...entities, ...views], {}, analyzer)
+          .process();
 
       final error = QueryProcessorError(methodElement)
           .unusedQueryMethodParameter(methodElement.parameters[1]);
@@ -424,9 +510,9 @@ void main() {
       Future<Person> findPersonById(int id);      
     ''');
 
-      final actual = () =>
-          QueryMethodProcessor(methodElement, [...entities, ...views], {})
-              .process();
+      final actual = () => QueryMethodProcessor(
+              methodElement, [...entities, ...views], {}, analyzer)
+          .process();
 
       expect(actual, throwsProcessorError());
     });
@@ -439,9 +525,9 @@ void main() {
       Stream<Person> findPersonById(int id);      
     ''');
 
-      final actual = () =>
-          QueryMethodProcessor(methodElement, [...entities, ...views], {})
-              .process();
+      final actual = () => QueryMethodProcessor(
+              methodElement, [...entities, ...views], {}, analyzer)
+          .process();
 
       expect(actual, throwsProcessorError());
     });
@@ -509,7 +595,7 @@ Future<List<Entity>> _getEntities() async {
       .toList();
 }
 
-Future<List<View>> _getViews() async {
+Future<List<View>> _getViews(AnalyzerEngine analyzer) async {
   final library = await resolveSource('''
       library test;
       
@@ -528,6 +614,7 @@ Future<List<View>> _getViews() async {
   return library.classes
       .where((classElement) =>
           classElement.hasAnnotation(annotations.DatabaseView))
-      .map((classElement) => ViewProcessor(classElement, {}).process())
+      .map(
+          (classElement) => ViewProcessor(classElement, {}, analyzer).process())
       .toList();
 }

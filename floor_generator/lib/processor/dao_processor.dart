@@ -6,6 +6,7 @@ import 'package:floor_generator/misc/type_utils.dart';
 import 'package:floor_generator/processor/deletion_method_processor.dart';
 import 'package:floor_generator/processor/insertion_method_processor.dart';
 import 'package:floor_generator/processor/processor.dart';
+import 'package:floor_generator/processor/query_analyzer/engine.dart';
 import 'package:floor_generator/processor/query_method_processor.dart';
 import 'package:floor_generator/processor/transaction_method_processor.dart';
 import 'package:floor_generator/processor/update_method_processor.dart';
@@ -26,20 +27,10 @@ class DaoProcessor extends Processor<Dao> {
   final List<Entity> _entities;
   final List<View> _views;
   final Set<TypeConverter> _typeConverters;
+  final AnalyzerEngine _analyzerContext;
 
-  DaoProcessor(
-    final ClassElement classElement,
-    final String daoGetterName,
-    final String databaseName,
-    final List<Entity> entities,
-    final List<View> views,
-    final Set<TypeConverter> typeConverters,
-  )   : _classElement = classElement,
-        _daoGetterName = daoGetterName,
-        _databaseName = databaseName,
-        _entities = entities,
-        _views = views,
-        _typeConverters = typeConverters;
+  DaoProcessor(this._classElement, this._daoGetterName, this._databaseName,
+      this._entities, this._views, this._typeConverters, this._analyzerContext);
 
   @override
   Dao process() {
@@ -84,11 +75,9 @@ class DaoProcessor extends Processor<Dao> {
   ) {
     return methods
         .where((method) => method.hasAnnotation(annotations.Query))
-        .map((method) => QueryMethodProcessor(
-              method,
-              [..._entities, ..._views],
-              typeConverters,
-            ).process())
+        .map((method) => QueryMethodProcessor(method, [..._entities, ..._views],
+                typeConverters, _analyzerContext)
+            .process())
         .toList();
   }
 

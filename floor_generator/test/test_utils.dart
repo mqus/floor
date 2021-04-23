@@ -12,6 +12,7 @@ import 'package:floor_generator/misc/type_utils.dart';
 import 'package:floor_generator/processor/dao_processor.dart';
 import 'package:floor_generator/processor/entity_processor.dart';
 import 'package:floor_generator/processor/error/processor_error.dart';
+import 'package:floor_generator/processor/query_analyzer/engine.dart';
 import 'package:floor_generator/processor/view_processor.dart';
 import 'package:floor_generator/value_object/dao.dart';
 import 'package:floor_generator/value_object/entity.dart';
@@ -136,6 +137,22 @@ Matcher throwsInvalidGenerationSourceError([
   }
 }
 
+Matcher throwsProcessorErrorWithMessagePrefix([
+  final ProcessorError? error,
+]) {
+  const typeMatcher = TypeMatcher<ProcessorError>();
+  if (error == null) {
+    return throwsA(typeMatcher);
+  } else {
+    return throwsA(
+      typeMatcher
+          .having((e) => e.message, 'message', startsWith(error.message))
+          .having((e) => e.todo, 'todo', error.todo)
+          .having((e) => e.element, 'element', error.element),
+    );
+  }
+}
+
 Matcher throwsProcessorError([
   final ProcessorError? error,
 ]) {
@@ -173,18 +190,22 @@ Future<Dao> createDao(final String methodSignature) async {
   final daoClass = library.classes.firstWhere((classElement) =>
       classElement.hasAnnotation(annotations.dao.runtimeType));
 
+  final analyzer = AnalyzerEngine();
   final entities = library.classes
       .where((classElement) => classElement.hasAnnotation(annotations.Entity))
       .map((classElement) => EntityProcessor(classElement, {}).process())
       .toList();
+  entities.forEach(analyzer.registerEntity);
   final views = library.classes
       .where((classElement) =>
           classElement.hasAnnotation(annotations.DatabaseView))
-      .map((classElement) => ViewProcessor(classElement, {}).process())
+      .map(
+          (classElement) => ViewProcessor(classElement, {}, analyzer).process())
       .toList();
 
   return DaoProcessor(
-      daoClass, 'personDao', 'TestDatabase', entities, views, {}).process();
+          daoClass, 'personDao', 'TestDatabase', entities, views, {}, analyzer)
+      .process();
 }
 
 Future<ClassElement> createClassElement(final String clazz) async {
@@ -200,6 +221,10 @@ Future<ClassElement> createClassElement(final String clazz) async {
   });
 
   return library.classes.first;
+}
+
+Future<AnalyzerEngine> getEngineWithPersonEntity() async {
+  return AnalyzerEngine()..registerEntity(await getPersonEntity());
 }
 
 extension StringTestExtension on String {
