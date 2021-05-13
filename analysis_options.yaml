@@ -52,7 +52,7 @@ linter:
     - await_only_futures
     - camel_case_types
     - cancel_subscriptions
-    # - cascade_invocations # not yet tested
+    - cascade_invocations
     - close_sinks # not reliable enough
     # - comment_references # blocked on https://github.com/flutter/flutter/issues/20765
     - constant_identifier_names

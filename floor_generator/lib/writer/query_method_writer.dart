@@ -47,15 +47,15 @@ class QueryMethodWriter implements Writer {
   }
 
   String _generateMethodBody() {
-    final _methodBody = StringBuffer();
+    final _methodBody = StringBuffer()
 
-    // generate the variable definitions which will store the sqlite argument
-    // lists, e.g. '?5,?6,?7,?8'. These have to be generated for each call to
-    // the query method to accommodate for different list sizes. This is
-    // necessary to guarantee that each single value is inserted at the right
-    // place and only via SQLite's escape-mechanism.
-    // If no [List] parameters are present, Nothing will be written.
-    _methodBody.write(_generateListConvertersForQuery());
+      // generate the variable definitions which will store the sqlite argument
+      // lists, e.g. '?5,?6,?7,?8'. These have to be generated for each call to
+      // the query method to accommodate for different list sizes. This is
+      // necessary to guarantee that each single value is inserted at the right
+      // place and only via SQLite's escape-mechanism.
+      // If no [List] parameters are present, Nothing will be written.
+      ..write(_generateListConvertersForQuery());
 
     final arguments = _generateArguments();
     final query = _generateQueryString();
@@ -95,10 +95,11 @@ class QueryMethodWriter implements Writer {
       final currentParamName = listParam.displayName;
       // dynamically generate strings of the form '?4,?5,?6,?7,?8' which we can
       // later insert into the query at the marked locations.
-      code.write('final _sqliteVariablesFor${currentParamName.capitalize()}=');
-      code.write('Iterable<String>.generate(');
-      code.write("$currentParamName.length, (i)=>'?\${i+offset}'");
-      code.writeln(").join(',');");
+      code
+        ..write('final _sqliteVariablesFor${currentParamName.capitalize()}=')
+        ..write('Iterable<String>.generate(')
+        ..write("$currentParamName.length, (i)=>'?\${i+offset}'")
+        ..writeln(").join(',');");
 
       lastParam = currentParamName;
     }
@@ -150,9 +151,10 @@ class QueryMethodWriter implements Writer {
     int start = 0;
     final originalQuery = _queryMethod.query.sql;
     for (final listParameter in _queryMethod.query.listParameters) {
-      code.write(
-          originalQuery.substring(start, listParameter.position).toLiteral());
-      code.write(' + _sqliteVariablesFor${listParameter.name.capitalize()} + ');
+      code
+        ..write(
+            originalQuery.substring(start, listParameter.position).toLiteral())
+        ..write(' + _sqliteVariablesFor${listParameter.name.capitalize()} + ');
       start = listParameter.position + varlistPlaceholder.length;
     }
     code.write(originalQuery.substring(start).toLiteral());

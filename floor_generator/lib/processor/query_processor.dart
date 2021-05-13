@@ -56,8 +56,7 @@ class QueryProcessor extends Processor<Query> {
           throw _processorError
               .queryMethodParameterIsNormalButVariableIsList(varToken.name);
         }
-        newQuery.write('?');
-        newQuery.write(varIndexInMethod);
+        newQuery..write('?')..write(varIndexInMethod);
       } else {
         //list variable/parameter
         if (!varToken.isListVar) {
