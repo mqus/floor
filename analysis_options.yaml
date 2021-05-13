@@ -79,7 +79,7 @@ linter:
     - non_constant_identifier_names
     - null_closures
     # - omit_local_variable_types # opposite of always_specify_types
-    # - one_member_abstracts # too many false positives
+    - one_member_abstracts # too many false positives
     - only_throw_errors
     - overridden_fields
     - package_api_docs
