@@ -37,7 +37,7 @@ class QueryAdapter {
     required final T Function(Map<String, Object?>) mapper,
   }) async {
     final rows = await _database.rawQuery(sql, arguments);
-    return rows.map((row) => mapper(row)).toList();
+    return rows.map(mapper).toList();
   }
 
   Future<void> queryNoReturn(
@@ -76,10 +76,10 @@ class QueryAdapter {
         .where((updatedTable) => updatedTable == queryableName || isView)
         .listen(
           (_) async => executeQueryAndNotifyController(),
-          onDone: () => controller.close(),
+          onDone: controller.close,
         );
 
-    controller.onCancel = () => subscription.cancel();
+    controller.onCancel = subscription.cancel;
 
     return controller.stream;
   }
@@ -108,10 +108,10 @@ class QueryAdapter {
         .where((updatedTable) => isView || updatedTable == queryableName)
         .listen(
           (_) async => executeQueryAndNotifyController(),
-          onDone: () => controller.close(),
+          onDone: controller.close,
         );
 
-    controller.onCancel = () => subscription.cancel();
+    controller.onCancel = subscription.cancel;
 
     return controller.stream;
   }

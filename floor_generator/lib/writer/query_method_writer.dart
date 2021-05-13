@@ -134,7 +134,7 @@ class QueryMethodWriter implements Writer {
         } else {
           final typeConverter =
               _queryMethod.typeConverters.getClosest(flatType);
-          return '...${parameter.displayName}.map((element) => _${typeConverter.name.decapitalize()}.encode(element))';
+          return '...${parameter.displayName}.map(_${typeConverter.name.decapitalize()}.encode)';
         }
       })
     ];

@@ -160,7 +160,7 @@ void main() {
         final _sqliteVariablesForDates=Iterable<String>.generate(dates.length, (i)=>'?${i+offset}').join(',');
         return _queryAdapter.queryList('SELECT * FROM Order WHERE date IN (' + _sqliteVariablesForDates + ')', 
           mapper: (Map<String, Object?> row) => Order(row['id'] as int, _dateTimeConverter.decode(row['dateTime'] as int)),
-          arguments: [...dates.map((element) => _dateTimeConverter.encode(element))]);
+          arguments: [...dates.map(_dateTimeConverter.encode)]);
       }
     '''));
     });
@@ -192,7 +192,7 @@ void main() {
         final _sqliteVariablesForDateTimeList=Iterable<String>.generate(dateTimeList.length, (i)=>'?${i+offset}').join(',');
         return _queryAdapter.queryList('SELECT * FROM Order WHERE id IN (' + _sqliteVariablesForIds + ') AND id IN (' + _sqliteVariablesForDateTimeList + ') OR foo in (' + _sqliteVariablesForIds + ') AND bar = ?2 OR name = ?1', 
           mapper: (Map<String, Object?> row) => Order(row['id'] as int, _dateTimeConverter.decode(row['dateTime'] as int)),
-          arguments: [name, _dateTimeConverter.encode(foo), ...ids, ...dateTimeList.map((element) => _dateTimeConverter.encode(element))]);
+          arguments: [name, _dateTimeConverter.encode(foo), ...ids, ...dateTimeList.map(_dateTimeConverter.encode)]);
       }
     '''));
   });
