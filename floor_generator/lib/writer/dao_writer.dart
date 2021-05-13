@@ -47,18 +47,16 @@ class DaoWriter extends Writer {
 
     final queryMethods = dao.queryMethods;
     if (queryMethods.isNotEmpty) {
-      classBuilder
-        ..fields.add(Field((builder) => builder
-          ..modifier = FieldModifier.final$
-          ..name = '_queryAdapter'
-          ..type = refer('QueryAdapter')));
+      classBuilder.fields.add(Field((builder) => builder
+        ..modifier = FieldModifier.final$
+        ..name = '_queryAdapter'
+        ..type = refer('QueryAdapter')));
 
       final queriesRequireChangeListener =
           dao.streamEntities.isNotEmpty || dao.streamViews.isNotEmpty;
 
-      constructorBuilder
-        ..initializers.add(Code(
-            "_queryAdapter = QueryAdapter(database${queriesRequireChangeListener ? ', changeListener' : ''})"));
+      constructorBuilder.initializers.add(Code(
+          "_queryAdapter = QueryAdapter(database${queriesRequireChangeListener ? ', changeListener' : ''})"));
     }
 
     final insertionMethods = dao.insertionMethods;
@@ -83,9 +81,8 @@ class DaoWriter extends Writer {
         final requiresChangeListener =
             dbHasViewStreams || streamEntities.contains(entity);
 
-        constructorBuilder
-          ..initializers.add(Code(
-              "$fieldName = InsertionAdapter(database, '${entity.name}', $valueMapper${requiresChangeListener ? ', changeListener' : ''})"));
+        constructorBuilder.initializers.add(Code(
+            "$fieldName = InsertionAdapter(database, '${entity.name}', $valueMapper${requiresChangeListener ? ', changeListener' : ''})"));
       }
     }
 
@@ -111,9 +108,8 @@ class DaoWriter extends Writer {
         final requiresChangeListener =
             dbHasViewStreams || streamEntities.contains(entity);
 
-        constructorBuilder
-          ..initializers.add(Code(
-              "$fieldName = UpdateAdapter(database, '${entity.name}', ${entity.primaryKey.fields.map((field) => '\'${field.columnName}\'').toList()}, $valueMapper${requiresChangeListener ? ', changeListener' : ''})"));
+        constructorBuilder.initializers.add(Code(
+            "$fieldName = UpdateAdapter(database, '${entity.name}', ${entity.primaryKey.fields.map((field) => '\'${field.columnName}\'').toList()}, $valueMapper${requiresChangeListener ? ', changeListener' : ''})"));
       }
     }
 
@@ -139,9 +135,8 @@ class DaoWriter extends Writer {
         final requiresChangeListener =
             dbHasViewStreams || streamEntities.contains(entity);
 
-        constructorBuilder
-          ..initializers.add(Code(
-              "$fieldName = DeletionAdapter(database, '${entity.name}', ${entity.primaryKey.fields.map((field) => '\'${field.columnName}\'').toList()}, $valueMapper${requiresChangeListener ? ', changeListener' : ''})"));
+        constructorBuilder.initializers.add(Code(
+            "$fieldName = DeletionAdapter(database, '${entity.name}', ${entity.primaryKey.fields.map((field) => '\'${field.columnName}\'').toList()}, $valueMapper${requiresChangeListener ? ', changeListener' : ''})"));
       }
     }
 

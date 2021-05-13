@@ -19,7 +19,7 @@ class ChangeMethodWriterHelper {
       ..requiredParameters.add(_generateParameter());
 
     if (_changeMethod.requiresAsyncModifier) {
-      methodBuilder..modifier = MethodModifier.async;
+      methodBuilder.modifier = MethodModifier.async;
     }
   }
 

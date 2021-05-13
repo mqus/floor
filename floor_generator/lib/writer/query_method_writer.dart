@@ -29,7 +29,7 @@ class QueryMethodWriter implements Writer {
       ..body = Code(_generateMethodBody());
 
     if (!_queryMethod.returnsStream || _queryMethod.returnsVoid) {
-      builder..modifier = MethodModifier.async;
+      builder.modifier = MethodModifier.async;
     }
     return builder.build();
   }
