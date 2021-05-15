@@ -17,7 +17,7 @@ class FloorWriter extends Writer {
       ..body = Code('$databaseBuilderName(name)')
       ..returns = refer(databaseBuilderName)
       ..docs.addAll([
-        r'/// Creates a database builder for a persistent database.',
+        '/// Creates a database builder for a persistent database.',
         '/// Once a database is built, you should keep a reference to it and re-use it.'
       ])
       ..requiredParameters.add(Parameter((builder) => builder
@@ -30,7 +30,7 @@ class FloorWriter extends Writer {
       ..static = true
       ..returns = refer(databaseBuilderName)
       ..docs.addAll([
-        r'/// Creates a database builder for an in memory database.',
+        '/// Creates a database builder for an in memory database.',
         '/// Information stored in an in memory database disappears when the process is killed.',
         '/// Once a database is built, you should keep a reference to it and re-use it.'
       ])

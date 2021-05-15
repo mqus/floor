@@ -17,7 +17,7 @@ void main() {
 
       final actual = InsertionMethodWriter(insertionMethod).write();
 
-      expect(actual, equalsDart(r'''
+      expect(actual, equalsDart('''
         @override
         Future<void> insertPerson(Person person) async {
           await _personInsertionAdapter.insert(person, OnConflictStrategy.abort);
@@ -84,7 +84,7 @@ void main() {
 
     final actual = InsertionMethodWriter(insertionMethod).write();
 
-    expect(actual, equalsDart(r'''
+    expect(actual, equalsDart('''
         @override
         Future<void> insertPerson(Person person) async {
           await _personInsertionAdapter.insert(person, OnConflictStrategy.replace);

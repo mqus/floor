@@ -17,7 +17,7 @@ void main() {
 
       final actual = UpdateMethodWriter(updateMethod).write();
 
-      expect(actual, equalsDart(r'''
+      expect(actual, equalsDart('''
         @override
         Future<void> updatePerson(Person person) async {
           await _personUpdateAdapter.update(person, OnConflictStrategy.abort);
@@ -33,7 +33,7 @@ void main() {
 
       final actual = UpdateMethodWriter(updateMethod).write();
 
-      expect(actual, equalsDart(r'''
+      expect(actual, equalsDart('''
         @override
         Future<void> updatePersons(List<Person> persons) async {
           await _personUpdateAdapter.updateList(persons, OnConflictStrategy.abort);
@@ -51,7 +51,7 @@ void main() {
 
       final actual = UpdateMethodWriter(updateMethod).write();
 
-      expect(actual, equalsDart(r'''
+      expect(actual, equalsDart('''
         @override
         Future<int> updatePerson(Person person) {
           return _personUpdateAdapter.updateAndReturnChangedRows(person, OnConflictStrategy.abort);
@@ -67,7 +67,7 @@ void main() {
 
       final actual = UpdateMethodWriter(updateMethod).write();
 
-      expect(actual, equalsDart(r'''
+      expect(actual, equalsDart('''
         @override
         Future<int> updatePersons(List<Person> persons) {
           return _personUpdateAdapter.updateListAndReturnChangedRows(persons, OnConflictStrategy.abort);
@@ -84,7 +84,7 @@ void main() {
 
     final actual = UpdateMethodWriter(updateMethod).write();
 
-    expect(actual, equalsDart(r'''
+    expect(actual, equalsDart('''
         @override
         Future<void> updatePerson(Person person) async {
           await _personUpdateAdapter.update(person, OnConflictStrategy.fail);
