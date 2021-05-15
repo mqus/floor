@@ -16,8 +16,9 @@ class DeletionAdapter<T> {
     final List<String> primaryKeyColumnName,
     final Map<String, Object?> Function(T) valueMapper, [
     final StreamController<String>? changeListener,
-  ])  : assert(entityName.isNotEmpty),
-        assert(primaryKeyColumnName.isNotEmpty),
+  ])  : assert(entityName.isNotEmpty, 'Entity name should not be empty'),
+        assert(primaryKeyColumnName.isNotEmpty,
+            'Primary column name name should not be empty'),
         _database = database,
         _entityName = entityName,
         _primaryKeyColumnNames = primaryKeyColumnName,

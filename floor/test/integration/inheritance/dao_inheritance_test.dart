@@ -1,3 +1,4 @@
+// ignore_for_file: one_member_abstracts
 import 'dart:async';
 
 import 'package:floor/floor.dart';

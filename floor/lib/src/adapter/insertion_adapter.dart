@@ -15,7 +15,7 @@ class InsertionAdapter<T> {
     final String entityName,
     final Map<String, Object?> Function(T) valueMapper, [
     final StreamController<String>? changeListener,
-  ])  : assert(entityName.isNotEmpty),
+  ])  : assert(entityName.isNotEmpty, 'Entity name should not be empty'),
         _database = database,
         _entityName = entityName,
         _valueMapper = valueMapper,

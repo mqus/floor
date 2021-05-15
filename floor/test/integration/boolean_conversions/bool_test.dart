@@ -64,7 +64,7 @@ class BooleanClass {
 
   final bool nonNullable;
 
-  BooleanClass(this.id, {this.nullable, required this.nonNullable});
+  BooleanClass(this.id, {required this.nullable, required this.nonNullable});
 
   @override
   bool operator ==(Object other) =>

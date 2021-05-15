@@ -94,7 +94,7 @@ class DatabaseProcessor extends Processor<Database> {
 
   bool _isDao(final FieldElement fieldElement) {
     final element = fieldElement.type.element;
-    return element is ClassElement ? _isDaoClass(element) : false;
+    return element is ClassElement && _isDaoClass(element);
   }
 
   bool _isDaoClass(final ClassElement classElement) {

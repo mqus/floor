@@ -2,11 +2,10 @@ import 'package:analyzer/dart/element/element.dart';
 import 'package:collection/collection.dart';
 import 'package:floor_generator/value_object/field.dart';
 import 'package:floor_generator/value_object/foreign_key.dart';
+import 'package:floor_generator/value_object/fts.dart';
 import 'package:floor_generator/value_object/index.dart';
 import 'package:floor_generator/value_object/primary_key.dart';
 import 'package:floor_generator/value_object/queryable.dart';
-
-import 'fts.dart';
 
 class Entity extends Queryable {
   final PrimaryKey primaryKey;
@@ -51,7 +50,7 @@ class Entity extends Queryable {
       return 'CREATE TABLE IF NOT EXISTS `$name` (${databaseDefinition.join(', ')})$withoutRowidClause';
     } else {
       if (fts!.tableCreateOption().isNotEmpty) {
-        databaseDefinition.add('${fts!.tableCreateOption()}');
+        databaseDefinition.add(fts!.tableCreateOption());
       }
       return 'CREATE VIRTUAL TABLE IF NOT EXISTS `$name` ${fts!.usingOption}(${databaseDefinition.join(', ')})';
     }

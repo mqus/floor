@@ -53,12 +53,12 @@ void main() {
       expect('A'.toLiteral(), equals("'A'"));
     });
 
-    test('Escaping \'', () {
-      expect("a'd'b".toLiteral(), equals("'a\\'d\\'b'"));
+    test("Escaping '", () {
+      expect("a'd'b".toLiteral(), equals(r"'a\'d\'b'"));
     });
 
     test('Escaping \n', () {
-      expect('A\ns\t'.toLiteral(), equals("'A\\ns\\t'"));
+      expect('A\ns\t'.toLiteral(), equals(r"'A\ns\t'"));
     });
 
     test('long-string', () {

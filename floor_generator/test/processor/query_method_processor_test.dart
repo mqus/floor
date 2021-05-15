@@ -166,7 +166,7 @@ void main() {
 
       expect(
         actual.sql,
-        equals(r'update sports set rated = 1 where id in (:varlist)'),
+        equals('update sports set rated = 1 where id in (:varlist)'),
       );
       expect(actual.listParameters, equals([ListParameter(41, 'ids')]));
     });
@@ -182,7 +182,7 @@ void main() {
 
       expect(
         actual.sql,
-        equals(r'update sports set rated = 1 where id in(:varlist)'),
+        equals('update sports set rated = 1 where id in(:varlist)'),
       );
       expect(actual.listParameters, equals([ListParameter(40, 'ids')]));
     });
@@ -198,7 +198,7 @@ void main() {
 
       expect(
         actual.sql,
-        equals(r'update sports set rated = 1 where id in      (:varlist)'),
+        equals('update sports set rated = 1 where id in      (:varlist)'),
       );
       expect(actual.listParameters, equals([ListParameter(46, 'ids')]));
     });
@@ -215,8 +215,8 @@ void main() {
       expect(
         actual.sql,
         equals(
-          r'update sports set rated = 1 where id in (:varlist) '
-          r'and where foo in (:varlist)',
+          'update sports set rated = 1 where id in (:varlist) '
+          'and where foo in (:varlist)',
         ),
       );
       expect(actual.listParameters,
@@ -235,8 +235,8 @@ void main() {
       expect(
         actual.sql,
         equals(
-          r'update sports set rated = 1 where id in (:varlist) '
-          r'AND foo = ?1',
+          'update sports set rated = 1 where id in (:varlist) '
+          'AND foo = ?1',
         ),
       );
       expect(actual.listParameters, equals([ListParameter(41, 'ids')]));
@@ -254,8 +254,8 @@ void main() {
       expect(
         actual.sql,
         equals(
-          r'update sports set rated = 1 where id in (:varlist) AND foo = ?2 '
-          r'AND name in (:varlist) and ?2 = ?1',
+          'update sports set rated = 1 where id in (:varlist) AND foo = ?2 '
+          'AND name in (:varlist) and ?2 = ?1',
         ),
       );
       expect(actual.listParameters,

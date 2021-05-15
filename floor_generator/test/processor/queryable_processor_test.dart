@@ -344,13 +344,13 @@ void main() {
     });
 
     test('Ignore getter', () async {
-      final classElement = await createClassElement('''
+      final classElement = await createClassElement(r'''
       class Person {
         final int id;
       
         final String name;
       
-        String get label => '\$id: \$name'
+        String get label => '$id: $name'
       
         Person(this.id, this.name);
       }

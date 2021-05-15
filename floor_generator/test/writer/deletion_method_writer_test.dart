@@ -17,7 +17,7 @@ void main() {
 
       final actual = DeletionMethodWriter(deletionMethod).write();
 
-      expect(actual, equalsDart(r'''
+      expect(actual, equalsDart('''
         @override
         Future<void> deletePerson(Person person) async {
           await _personDeletionAdapter.delete(person);
@@ -33,7 +33,7 @@ void main() {
 
       final actual = DeletionMethodWriter(deletionMethod).write();
 
-      expect(actual, equalsDart(r'''
+      expect(actual, equalsDart('''
         @override
         Future<void> deletePersons(List<Person> persons) async {
           await _personDeletionAdapter.deleteList(persons);
@@ -51,7 +51,7 @@ void main() {
 
       final actual = DeletionMethodWriter(deletionMethod).write();
 
-      expect(actual, equalsDart(r'''
+      expect(actual, equalsDart('''
         @override
         Future<int> deletePerson(Person person) {
           return _personDeletionAdapter.deleteAndReturnChangedRows(person);
@@ -67,7 +67,7 @@ void main() {
 
       final actual = DeletionMethodWriter(deletionMethod).write();
 
-      expect(actual, equalsDart(r'''
+      expect(actual, equalsDart('''
         @override
         Future<int> deletePersons(List<Person> persons) {
           return _personDeletionAdapter.deleteListAndReturnChangedRows(persons);

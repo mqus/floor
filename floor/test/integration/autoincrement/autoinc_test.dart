@@ -49,7 +49,7 @@ class AutoIncEntity {
 
   final double decimal;
 
-  AutoIncEntity(this.decimal, {this.id});
+  AutoIncEntity(this.decimal, {required this.id});
 
   @override
   bool operator ==(Object other) =>

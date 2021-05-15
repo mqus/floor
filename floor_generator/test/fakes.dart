@@ -272,7 +272,7 @@ class FakeClassElement implements ClassElement {
   InterfaceType? get supertype => throw UnimplementedError();
 
   @override
-  E? thisOrAncestorMatching<E extends Element>(predicate) {
+  E? thisOrAncestorMatching<E extends Element>(bool Function(E) predicate) {
     throw UnimplementedError();
   }
 
@@ -471,7 +471,7 @@ class FakeFieldElement implements FieldElement {
   Source? get source => throw UnimplementedError();
 
   @override
-  E? thisOrAncestorMatching<E extends Element>(predicate) {
+  E? thisOrAncestorMatching<E extends Element>(bool Function(E) predicate) {
     throw UnimplementedError();
   }
 
