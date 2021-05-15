@@ -21,7 +21,7 @@ linter:
     - always_use_package_imports
     - annotate_overrides
     # - avoid_annotating_with_dynamic # conflicts with always_specify_types
-    # - avoid_as
+    # - avoid_as # We need this to cast dynamics into types (mainly in tests and produced output)
     - avoid_bool_literals_in_conditional_expressions
     # - avoid_catches_without_on_clauses # we do this commonly
     - avoid_catching_errors
@@ -137,13 +137,13 @@ linter:
     - prefer_if_null_operators
     - prefer_initializing_formals
     - prefer_inlined_adds
-    # - prefer_int_literals # not yet tested
+    # - prefer_int_literals # we prefer writing double literals explicitly
     # - prefer_interpolation_to_compose_strings
     - prefer_is_empty
     - prefer_is_not_empty
     - prefer_is_not_operator
     - prefer_iterable_whereType
-    # - prefer_mixin # https://github.com/dart-lang/language/issues/32
+    - prefer_mixin
     - prefer_null_aware_method_calls
     - prefer_null_aware_operators
     # - prefer_relative_imports # we avoid relative imports
@@ -164,7 +164,7 @@ linter:
     - test_types_in_equals
     - throw_in_finally
     - tighten_type_of_initializing_formals
-    # - type_annotate_public_apis # subset of always_specify_types
+    - type_annotate_public_apis
     - type_init_formals
     - unawaited_futures
     - unnecessary_await_in_return
