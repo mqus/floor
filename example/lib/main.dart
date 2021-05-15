@@ -107,13 +107,6 @@ class TaskListCell extends StatelessWidget {
       key: Key('${task.hashCode}'),
       background: Container(color: Colors.red),
       direction: DismissDirection.endToStart,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(
-          vertical: 8,
-          horizontal: 16,
-        ),
-        child: Text(task.message),
-      ),
       onDismissed: (_) async {
         await dao.deleteTask(task);
 
@@ -123,6 +116,13 @@ class TaskListCell extends StatelessWidget {
             const SnackBar(content: Text('Removed task')),
           );
       },
+      child: Padding(
+        padding: const EdgeInsets.symmetric(
+          vertical: 8,
+          horizontal: 16,
+        ),
+        child: Text(task.message),
+      ),
     );
   }
 }
@@ -161,10 +161,10 @@ class TasksTextField extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.only(right: 16),
             child: OutlinedButton(
-              child: const Text('Save'),
               onPressed: () async {
                 await _persistMessage();
               },
+              child: const Text('Save'),
             ),
           ),
         ],
