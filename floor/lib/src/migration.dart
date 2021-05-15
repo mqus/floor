@@ -18,8 +18,9 @@ class Migration {
   /// [migrate] will be called by the database and performs the actual
   /// migration.
   Migration(this.startVersion, this.endVersion, this.migrate)
-      : assert(startVersion > 0),
-        assert(startVersion < endVersion);
+      : assert(startVersion > 0, 'startVersion should be greater than 0'),
+        assert(startVersion < endVersion,
+            'endVersion should be greater than startVersion');
 
   @override
   bool operator ==(Object other) =>
