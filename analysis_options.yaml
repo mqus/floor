@@ -93,7 +93,7 @@ linter:
     # - lines_longer_than_80_chars # not yet tested, is covered by dartfmt
     - list_remove_unrelated_type
     - literal_only_boolean_expressions
-    # - missing_whitespace_between_adjacent_strings # has too many false positives
+    - missing_whitespace_between_adjacent_strings # we sometimes use this to break up long generated output to test against
     - no_adjacent_strings_in_list
     - no_default_cases
     - no_duplicate_case_values

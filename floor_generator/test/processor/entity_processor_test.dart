@@ -1,3 +1,4 @@
+// ignore_for_file: missing_whitespace_between_adjacent_strings
 import 'package:analyzer/dart/element/element.dart';
 import 'package:build_test/build_test.dart';
 import 'package:floor_annotation/floor_annotation.dart' as annotations;

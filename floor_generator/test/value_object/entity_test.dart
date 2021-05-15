@@ -1,3 +1,4 @@
+// ignore_for_file: missing_whitespace_between_adjacent_strings
 import 'package:floor_annotation/floor_annotation.dart' as annotations;
 import 'package:floor_generator/misc/constants.dart';
 import 'package:floor_generator/misc/extension/foreign_key_action_extension.dart';
